@@ -1,0 +1,25 @@
+:root { --bg: #faf9f6; --fg: #1c1c1a; --muted: #75736d; --line: #e4e1d9; --card: #ffffff; --accent: #1c1c1a; --ok: #1d7a46; --err: #b3261e; } /* Màu nền, chữ, viền và trạng thái */
+@media (prefers-color-scheme: dark) { :root { --bg: #151513; --fg: #f1efe9; --muted: #9b988f; --line: #2c2b27; --card: #1d1d1a; --accent: #f1efe9; --ok: #5fcf8d; --err: #ff8a80; } } /* Bản tối theo hệ điều hành */
+* { box-sizing: border-box; } /* Tính kích thước gồm cả viền */
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; } /* Nền và chữ chung */
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; } /* Cột nội dung giữa trang, lề 16px */
+header { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; } /* Đầu trang xuống dòng trên màn hình hẹp */
+h1 { margin: 0 0 4px; font-size: 28px; } /* Tiêu đề chính */
+h2 { margin: 24px 0 12px; font-size: 18px; } /* Tiêu đề mục */
+h3 { margin: 0 0 4px; font-size: 16px; } /* Câu hỏi của thị trường */
+.muted { color: var(--muted); font-size: 14px; } /* Chữ phụ */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 12px; } /* Khung thẻ */
+.card input { display: block; width: 100%; margin: 8px 0; } /* Ô nhập trong thẻ */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 12px 0; } /* Bốn số liệu quỹ */
+.grid div { display: flex; flex-direction: column; } /* Nhãn trên, số dưới */
+.phase { margin: 0 0 4px; font-size: 14px; } /* Giai đoạn */
+.action { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; } /* Hàng nút */
+.action input { width: 120px; margin: 0; } /* Ô nhập tiền */
+input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; } /* Kiểu ô nhập */
+button { padding: 8px 14px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent); color: var(--bg); font: inherit; cursor: pointer; } /* Nút chính */
+button.ghost { background: transparent; color: var(--fg); border-color: var(--line); } /* Nút phụ */
+button:disabled { opacity: 0.4; cursor: not-allowed; } /* Nút bị khóa */
+.status { font-size: 14px; margin: 8px 0 0; width: 100%; } /* Dòng trạng thái giao dịch */
+.status.ok { color: var(--ok); } /* Thành công */
+.status.error { color: var(--err); } /* Thất bại */
+a { color: inherit; } /* Link cùng màu chữ */

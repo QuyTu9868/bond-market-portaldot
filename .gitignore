@@ -5,3 +5,6 @@ artifacts/
 coverage/
 typechain-types/
 hardhat.sandbox.config.js
+.env.local
+.next/
+deployments/localhost-*.json

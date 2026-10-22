@@ -14,6 +14,9 @@ module.exports = {
     },
   },
   networks: { // Các mạng có thể deploy
+    hardhat: { // Mạng ảo dùng cho npm test và npm run node
+      mining: { auto: true, interval: 5000 }, // Vẫn đào ngay khi có giao dịch, thêm 1 block mỗi 5 giây để giờ của chuỗi chạy đều như testnet
+    },
     portaldotTestnet: { // Testnet Portaldot V3
       url: portaldotRpcUrl, // Địa chỉ RPC
       chainId: 420420777, // Chain ID của testnet, lấy từ trang hackathon ngày 20/10

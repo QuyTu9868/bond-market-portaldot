@@ -69,6 +69,27 @@ npm run demo:testnet
 
 The scripts save addresses and transaction hashes in the `deployments/` folder.
 
+## Web app
+
+A minimal Next.js + wagmi app in `web/`: connect MetaMask, list markets with live countdowns, create a market, bet, post bonds, finalize and claim. Every transaction button shows its state: waiting for signature, confirming, done (with an explorer link when one is configured), or failed with a readable reason.
+
+```
+# with the local node running and the contract deployed (see above)
+cd web
+npm install
+Copy-Item .env.local.example .env.local   # set NEXT_PUBLIC_NETWORK and NEXT_PUBLIC_MARKET_ADDRESS
+npm run dev                               # open http://localhost:3000
+```
+
+For the local network, add it to MetaMask (RPC `http://127.0.0.1:8545`, chain ID 31337) and import one of the test accounts printed by `npm run node`. These keys are public and only work on the local fake chain.
+
+End-to-end test (drives a real Edge browser through the whole flow with a mock wallet backed by the local node):
+
+```
+cd web
+npm run test:e2e
+```
+
 ## Testnet deployment
 
 | Item | Value |
@@ -94,6 +115,7 @@ The scripts save addresses and transaction hashes in the `deployments/` folder.
 
 - [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) (MIT license): ReentrancyGuard.
 - Hardhat and its toolbox for compiling and testing.
+- Next.js, React, wagmi, viem and TanStack Query (MIT) for the web app. Playwright (Apache 2.0) for the end-to-end test.
 - The idea of a Yes/No market comes from Polymarket. The idea of refunding after a long wait with no resolution was inspired by [0xassou/wager](https://github.com/0xassou/wager). All contract code here was written from scratch for this hackathon, no code was copied.
 
 ## Known limitations
@@ -101,7 +123,6 @@ The scripts save addresses and transaction hashes in the `deployments/` folder.
 - A very rich actor can win the bond war, but must out-bond all other bonders combined.
 - The resolution window is fixed. A large bond in the last seconds leaves no time to respond. A fix (extend the window on late bonds) is possible, see [docs/implementation-notes.md](docs/implementation-notes.md).
 - Pool-sharing (parimutuel) payouts, no live price like the real Polymarket.
-- No web frontend yet, only scripts.
 - Not audited.
 
 ## Project structure
@@ -110,6 +131,7 @@ The scripts save addresses and transaction hashes in the `deployments/` folder.
 contracts/   Solidity contracts
 test/        Hardhat tests
 scripts/     check-network, deploy-market, demo-market
+web/         Next.js frontend and its end-to-end test
 docs/        architecture, implementation notes, references
 archive/     the earlier Launchpad idea, not compiled
 ```

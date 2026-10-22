@@ -25,9 +25,31 @@ Dự án đổi sang thị trường dự đoán Yes/No kiểu Polymarket, kết
 - `deploy:local` rồi `demo:local` trên mạng ảo: đạt (tạo, cược, cọc, chốt, nhận tiền).
 - Slither (chạy trên máy bạn, 22/10): không có High hoặc Medium. Low: so sánh với `block.timestamp` (cố ý). Informational: gọi `call` để gửi tiền (cố ý, có `nonReentrant` và đánh dấu `claimed` trước khi gửi).
 
+### Frontend (CP6, 22/10)
+
+Quyết định tự đưa ra (cần bạn xác nhận):
+
+1. **Không dùng RainbowKit**, chỉ wagmi + nút "Connect wallet" kết nối MetaMask (injected). RainbowKit cần WalletConnect project ID (đăng ký tài khoản ngoài). Thêm sau được nếu cần nhiều loại ví.
+2. **JavaScript, không TypeScript**, một trang duy nhất, CSS tự viết. Giao diện tiếng Anh (cho ban giám khảo).
+3. **Giờ theo chuỗi, không theo đồng hồ máy** (`web/lib/useChainNow.js`): contract chỉ tin giờ của block. Lỗi gặp khi test: máy và chuỗi lệch giờ làm giao dịch bị từ chối dù giao diện báo đã được phép.
+4. **Mạng ảo Hardhat tạo thêm 1 block mỗi 5 giây** (`hardhat.config.js`). Trước đó node chỉ tạo block khi có giao dịch nên giờ của chuỗi đứng yên. Không ảnh hưởng test contract (27 đạt).
+5. **QueryClient băm khóa bằng hàm của wagmi** (`web/app/providers.js`). Sửa lỗi trang trắng "Do not know how to serialize a BigInt" do react-query 5.59.
+6. **Ô "phút" cho phép số lẻ** (tối thiểu 0.1 phút) để demo nhanh.
+7. **Test E2E dùng ví giả** chuyển lệnh sang node Hardhat (tài khoản mở sẵn), chạy Edge cài sẵn qua `playwright-core`. Không tự động hóa MetaMask thật (Synpress) vì nặng và hay vỡ.
+8. Mỗi dòng JavaScript có comment. Riêng các dòng giao diện JSX không comment từng dòng vì làm mã khó đọc, chỉ comment theo khối.
+9. Thông số POT ở frontend giả định 18 chữ số thập phân (chưa xác minh, giống phần contract).
+
+Đã kiểm tra: `npm run build` đạt; `npm run test:e2e` đạt toàn luồng (kết nối, tạo, cược, cọc, hết cửa sổ, chốt, nhận 0.7).
+
+Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "từ chối ký" trên ví thật, chạy trên testnet.
+
+### Lỗi chập chờn đã thấy
+
+- Lần chạy `npm test` đầu tiên ngay sau khi sửa contract hoặc `hardhat.config.js` từng báo hàng loạt lỗi `Invalid Chai property: changeEtherBalance`. Chạy lại thì đạt 27/27 (thử nhiều lần). Chưa rõ nguyên nhân, nghi do lần biên dịch lại. Nếu gặp: chạy lại `npm test`.
+
 ### CHƯA làm
 
-- Chưa có frontend.
+- Chưa deploy testnet (chờ token test về địa chỉ 0x).
 
 ## Launchpad cũ (lịch sử)
 

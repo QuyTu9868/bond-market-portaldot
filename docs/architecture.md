@@ -8,12 +8,12 @@ Sơ đồ dùng Mermaid, GitHub hiển thị trực tiếp. Dùng nguyên cho h�
 flowchart LR
     U[User with wallet] -->|createMarket, bet, postBond, finalize, claim| M[PredictionMarket contract]
     S[Scripts: check-network, deploy, demo] -->|ethers.js over RPC| M
-    F[Frontend, planned CP6] -->|wagmi / viem| M
+    F[Web app in web/, Next.js] -->|wagmi / viem| M
     M -->|reads block.timestamp| C[Portaldot V3 EVM testnet]
     U -->|MetaMask, chain ID 420420777| C
 ```
 
-Chỉ có một contract chạy trên chuỗi: `PredictionMarket`, giữ mọi thị trường và tiền. Script chạy ngoài chuỗi để deploy và demo. Frontend là kế hoạch ở checkpoint 6, chưa có.
+Chỉ có một contract chạy trên chuỗi: `PredictionMarket`, giữ mọi thị trường và tiền. Script chạy ngoài chuỗi để deploy và demo. Frontend Next.js nằm trong `web/`, đọc và ghi trực tiếp vào contract qua ví người dùng.
 
 ## Trạng thái của một thị trường
 
