@@ -1,0 +1,123 @@
+# Bond Market
+
+A prediction market for Portaldot V3 testnet. Anyone can create a Yes/No question, bet on it, and the result is decided by a bond war instead of an oracle.
+
+Built for Portaldot Hacker House 2026, track: Ecosystem DApps.
+
+> Status: testnet prototype, not audited. Do not use real funds.
+
+## The problem
+
+A prediction market needs someone to say what really happened. A blockchain cannot know "did it rain tomorrow". Existing designs either pay for an external oracle, or trust one person (the market creator, then a contract owner for disputes) to report and judge. That person can cheat.
+
+## What this project does differently
+
+**The result is decided by whoever puts more money behind it, with no oracle and no admin.**
+
+1. Betting closes at the deadline set by the creator.
+2. Then anyone can post a bond on Yes or No. The first bond opens a resolution window.
+3. During the window anyone can add more bond to either side, so a wrong claim can be outbid.
+4. When the window ends, the side with the larger total bond wins. The losing bonds are shared among the winning bonders.
+
+Lying is expensive: you must out-bond everyone who disagrees, and they profit by doing so.
+
+Extra safety rules:
+
+- If bonds tie, or nobody posts a bond within 7 days after betting ends, everyone gets their money back.
+- The contract has only 5 state-changing functions (`createMarket`, `bet`, `postBond`, `finalize`, `claim`). No owner, no admin, no fee. A test checks this.
+
+## How it works
+
+- Bets and bonds are paid in the network's native token. No token approval step is needed.
+- Bet payout: winners share the whole bet pool in proportion to their bet.
+- Bond payout: winning bonders share the whole bond pool in proportion to their bond.
+- Worked example: Ann bets 1 on Yes, Ben bets 3 on No. Chi bonds 5 on Yes, Dan bonds 2 on No. Yes wins. Ann receives 4, Chi receives 7, Ben and Dan receive nothing.
+
+Full spec: [docs/references/design-spec.md](docs/references/design-spec.md). Diagrams: [docs/architecture.md](docs/architecture.md).
+
+## Quick start
+
+Requirements: Node.js 20 or newer (LTS). The first compile downloads the Solidity compiler, so it needs internet.
+
+```
+npm install
+npm test
+```
+
+Run everything on a local fake chain (recommended before touching testnet). Use two terminals:
+
+```
+# terminal 1
+npm run node
+
+# terminal 2
+npm run deploy:local
+npm run demo:local
+```
+
+Run on Portaldot testnet:
+
+```
+# PowerShell on Windows
+Copy-Item .env.example .env
+# then open .env and fill PRIVATE_KEY with a fresh test wallet (never a wallet with real funds)
+
+npm run check:network     # checks the network, deploys a tiny Ping contract
+npm run deploy:testnet
+npm run demo:testnet
+```
+
+The scripts save addresses and transaction hashes in the `deployments/` folder.
+
+## Testnet deployment
+
+| Item | Value |
+|---|---|
+| Network | Portaldot V3 testnet (chain ID 420420777) |
+| PredictionMarket address | TBD, filled in after `npm run deploy:testnet` |
+| Deploy tx hash | TBD |
+| Demo tx hashes | TBD, see `deployments/portaldotTestnet-demo-market.json` |
+
+## Contracts
+
+| File | Purpose |
+|---|---|
+| `contracts/PredictionMarket.sol` | Markets, bets, bond war, payouts |
+| `contracts/Ping.sol` | Tiny contract used to check the network works |
+
+## Tests and security checks
+
+- 27 tests in `test/market.test.js` cover market creation, betting rules, bonds and the resolution window, outcome selection, payouts, refunds (tie, nobody bet on the winner, no bond for 7 days), double claim, and the absence of admin functions.
+- Slither static analysis: no high or medium findings. Two notes: the contract compares against `block.timestamp` (intended, deadlines are in seconds or days and validators can only shift it by seconds), and it sends native token with a low-level call (guarded by `nonReentrant` and marks the position as claimed before sending).
+
+## Third-party code
+
+- [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) (MIT license): ReentrancyGuard.
+- Hardhat and its toolbox for compiling and testing.
+- The idea of a Yes/No market comes from Polymarket. The idea of refunding after a long wait with no resolution was inspired by [0xassou/wager](https://github.com/0xassou/wager). All contract code here was written from scratch for this hackathon, no code was copied.
+
+## Known limitations
+
+- A very rich actor can win the bond war, but must out-bond all other bonders combined.
+- The resolution window is fixed. A large bond in the last seconds leaves no time to respond. A fix (extend the window on late bonds) is possible, see [docs/implementation-notes.md](docs/implementation-notes.md).
+- Pool-sharing (parimutuel) payouts, no live price like the real Polymarket.
+- No web frontend yet, only scripts.
+- Not audited.
+
+## Project structure
+
+```
+contracts/   Solidity contracts
+test/        Hardhat tests
+scripts/     check-network, deploy-market, demo-market
+docs/        architecture, implementation notes, references
+archive/     the earlier Launchpad idea, not compiled
+```
+
+## X posts
+
+Links to posts about this project will be added here.
+
+## License
+
+MIT

@@ -1,0 +1,25 @@
+{
+  "name": "portaldot-bond-market",
+  "version": "0.2.0",
+  "description": "Prediction market resolved by a bond war instead of an oracle, for Portaldot Hacker House 2026",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "check:network": "hardhat run scripts/check-network.js --network portaldotTestnet",
+    "deploy:local": "hardhat run scripts/deploy-market.js --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy-market.js --network portaldotTestnet",
+    "demo:local": "hardhat run scripts/demo-market.js --network localhost",
+    "demo:testnet": "hardhat run scripts/demo-market.js --network portaldotTestnet"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "2.29.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0",
+    "dotenv": "^16.4.5"
+  }
+}
