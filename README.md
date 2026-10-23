@@ -95,9 +95,19 @@ npm run test:e2e
 | Item | Value |
 |---|---|
 | Network | Portaldot V3 testnet (chain ID 420420777) |
-| PredictionMarket address | TBD, filled in after `npm run deploy:testnet` |
-| Deploy tx hash | TBD |
-| Demo tx hashes | TBD, see `deployments/portaldotTestnet-demo-market.json` |
+| Deployer | `0x7d2aa1D951D7AB5F005527530b3582d1ADC20798` |
+| Network check: `Ping` contract | `0x45E235E87f4c73e402141dA4d548D6BE4dfe562b` |
+| `Ping` deploy tx | `0x6a14078835edddb30283aa7b1c6d729982e0a8cfd685e3dde6cdb714e0cccf65` |
+| `ping()` call tx | `0x1b4621c86dd031b050d8a5333b2ffc5ef7bc96b51d6393aac22c728776179a9f` |
+| **PredictionMarket address** | `0xF73AF8c6a914d390A4F17FFa28535aa26c23B659` (resolution window 60 s for the demo) |
+| PredictionMarket deploy tx | `0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1` (block 162272) |
+| Demo: create market | `0xb11b65bc56268a8932177a72af3be04a08e7dddd2fd440f67433b527acacf062` |
+| Demo: bet Yes | `0x21de3dedfe7aac16d33ff95d5893f4d2467e82b67aebe265b1e1fd2e2c2dcc76` |
+| Demo: bond Yes | `0xaf02d92cbfe4ddc83f1003ca962382150d5b4a307a0e895047ace7bf5f8895a7` |
+| Demo: finalize | `0xc8055c5f5c0229e7c1fc50723aa79ce6b23b730b199affc42bedc47cf64569bf` |
+| Demo: claim | `0x76ed44a06cfc0205f64a40794da3fe9986c103845ee9bcef18e428b765c69cad` |
+
+Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT because of the storage deposit, and the whole demo about 60 tPOT more. The web app can point to this deployment: set `NEXT_PUBLIC_NETWORK=testnet` and `NEXT_PUBLIC_MARKET_ADDRESS` to the address above in `web/.env.local`.
 
 ## Contracts
 

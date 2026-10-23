@@ -13,10 +13,12 @@ Anyone can create a Yes/No question and bet with native tokens. After betting cl
 - Slither static analysis: no high or medium findings.
 - Web app (Next.js + wagmi + MetaMask): list markets with live countdowns, create, bet, bond, finalize, claim. Every transaction shows waiting for signature, confirming, done, or a readable error.
 - End-to-end browser test of the full flow (connect, create, bet, bond, finalize, claim) passing on a local chain.
-- Portaldot V3 testnet connection verified: chain ID 420420777, RPC live.
+- Deployed on Portaldot V3 testnet (chain ID 420420777): `PredictionMarket` at `0xF73AF8c6a914d390A4F17FFa28535aa26c23B659`, deploy tx `0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1`. The full flow (create, bet, bond, finalize, claim) ran on testnet, all transaction hashes are in the README.
+- Finding: deploying on pallet_revive costs about 530 tPOT for a 6.7 KB contract (storage deposit), so contract size matters on this chain.
 
 **Remaining**
-- Testnet deployment: waiting for tPOT to reach our EVM (0x) address. Contract address and transaction hashes will be added to the README right after.
+- Point the web app at the testnet deployment and test with MetaMask on Portaldot.
+- Reduce contract size to cut the deploy fee.
 - Extend the resolution window when a large bond arrives in the last minutes (anti last-second bond).
 - Final demo video, pitch deck.
 
@@ -24,7 +26,7 @@ Anyone can create a Yes/No question and bet with native tokens. After betting cl
 
 ## Video demo (dưới 3 phút)
 
-Nếu chưa có testnet: quay trên mạng ảo local theo README (phần Quick start và Web app). Thông báo của ban tổ chức cho phép mock data ở bước này, nhưng nói rõ trong video là đang chạy local và lý do (chờ tPOT).
+Đã có testnet thật: quay `npm run demo:testnet` (terminal) và web app trỏ vào testnet (xem README, phần Web app). Nên mở địa chỉ contract trong Node Console (https://node-console.portaldot.dev/) để chứng minh giao dịch thật.
 
 1. (20 giây) Vấn đề: thị trường dự đoán cần người báo kết quả, người đó có thể gian lận hoặc phải tin admin.
 2. (20 giây) Giải pháp: đấu cọc, phe cọc nhiều hơn thắng, không oracle, không admin.
