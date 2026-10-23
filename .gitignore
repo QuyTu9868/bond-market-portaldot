@@ -8,3 +8,4 @@ hardhat.sandbox.config.js
 .env.local
 .next/
 deployments/localhost-*.json
+web/e2e/video/

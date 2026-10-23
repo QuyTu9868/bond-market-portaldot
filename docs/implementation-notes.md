@@ -43,6 +43,18 @@ Quyết định tự đưa ra (cần bạn xác nhận):
 
 Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "từ chối ký" trên ví thật, chạy trên testnet.
 
+### Video demo trên testnet (23/10)
+
+- Kịch bản tự động `web/e2e/record-demo.js` (`npm run record` trong `web/`) mở web app trỏ vào testnet, bấm từng bước, quay video 1280x720 có phụ đề, lưu ở `web/e2e/video/` (không commit, 5.5 MB). Video hiện tại dài 2 phút 13 giây.
+- Ví trong video là ví tự động ký bằng khóa trong `.env`, không phải MetaMask thật. Phụ đề đầu video có nói rõ. Cần bạn thử MetaMask thật bấm tay một lần để chắc hộp thoại ký hoạt động.
+- Mỗi lần quay tốn khoảng 10 tPOT (tạo thị trường mới ghi thêm dữ liệu).
+
+### Hiện tượng cần bạn quyết có sửa không (đã thấy, chưa sửa)
+
+1. **Ô nhập tiền trong thẻ thị trường bị đặt lại về 0.01** khi gõ ngay sau lúc thẻ mới xuất hiện (thấy khi quay video: gõ 0.05, cược ra 0.01). Chưa xác định nguyên nhân gốc; nghi thẻ bị dựng lại khi giờ ước lượng của chuỗi nhảy qua lại. Người dùng thật có thể mất số đã gõ.
+2. **Giao diện báo "Betting ended" sớm vài giây so với block thật**, bấm cọc đúng lúc đó thì contract từ chối ("Betting is still open"). Nguyên nhân: giờ chuỗi ở giao diện là ước lượng (`useChainNow`). Kịch bản quay phải chờ thêm 6 giây.
+3. **Node RPC testnet đôi khi trả "An unknown RPC error occurred"** (gặp 1 trong 5 lần quay). Chạy lại thì đạt.
+
 ### Lỗi chập chờn đã thấy
 
 - Lần chạy `npm test` đầu tiên ngay sau khi sửa contract hoặc `hardhat.config.js` từng báo hàng loạt lỗi `Invalid Chai property: changeEtherBalance`. Chạy lại thì đạt 27/27 (thử nhiều lần). Chưa rõ nguyên nhân, nghi do lần biên dịch lại. Nếu gặp: chạy lại `npm test`.

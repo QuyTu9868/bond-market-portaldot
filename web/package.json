@@ -6,7 +6,8 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "test:e2e": "node e2e/flow.e2e.js"
+    "test:e2e": "node e2e/flow.e2e.js",
+    "record": "node e2e/record-demo.js"
   },
   "devDependencies": {
     "playwright-core": "1.48.2"
