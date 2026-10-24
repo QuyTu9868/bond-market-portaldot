@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bond Market pitch deck</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  :root { --bg:#faf9f6; --fg:#1c1c1a; --muted:#6f6d66; --line:#e2dfd6; --card:#ffffff; --orange:#ff8a1f; --dark:#1c1c1a; --cream:#f1efe9; }
+  body { margin:0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color:var(--fg); background:var(--bg); }
+  .slide { width:1280px; height:720px; padding:64px 80px; position:relative; page-break-after:always; overflow:hidden; background:var(--bg); }
+  .slide:last-child { page-break-after:auto; }
+  .tag { font-size:16px; letter-spacing:.14em; text-transform:uppercase; color:var(--orange); font-weight:700; margin-bottom:18px; }
+  h1 { font-size:68px; line-height:1.05; margin:0 0 24px; letter-spacing:-.02em; }
+  h2 { font-size:46px; line-height:1.12; margin:0 0 30px; letter-spacing:-.01em; }
+  p { font-size:24px; line-height:1.5; margin:0 0 16px; }
+  .muted { color:var(--muted); }
+  .foot { position:absolute; left:80px; right:80px; bottom:34px; display:flex; justify-content:space-between; font-size:15px; color:var(--muted); }
+  .cols { display:grid; gap:24px; }
+  .c2 { grid-template-columns: 1fr 1fr; }
+  .c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .c4 { grid-template-columns: repeat(4, 1fr); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:24px 26px; }
+  .card h3 { margin:0 0 10px; font-size:24px; }
+  .card p { font-size:20px; margin:0; }
+  .num { display:inline-flex; width:40px; height:40px; border-radius:50%; background:var(--dark); color:var(--cream); align-items:center; justify-content:center; font-weight:700; font-size:20px; margin-bottom:14px; }
+  .dark { background:var(--dark); color:var(--cream); }
+  .dark .muted { color:#a8a59b; }
+  .dark .tag { color:var(--orange); }
+  .dark .foot { color:#a8a59b; }
+  .bad { border-left:6px solid #b3261e; }
+  .good { border-left:6px solid var(--orange); }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size:17px; word-break:break-all; }
+  table { border-collapse:collapse; width:100%; font-size:20px; }
+  td, th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:16px; text-transform:uppercase; letter-spacing:.06em; }
+  .big { font-size:54px; font-weight:800; letter-spacing:-.02em; }
+  .pill { display:inline-block; padding:6px 14px; border-radius:99px; background:var(--cream); border:1px solid var(--line); font-size:17px; margin:0 8px 8px 0; }
+  .pill.o { background:var(--orange); color:#1c1c1a; border-color:var(--orange); font-weight:700; }
+  .dark .pill { color:#1c1c1a; }
+  .row { display:flex; align-items:stretch; gap:18px; }
+  .row .arrow { align-self:center; }
+  .arrow { color:var(--orange); font-size:34px; font-weight:700; }
+  .step { flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 18px; }
+  .step b { display:block; font-size:21px; margin-bottom:6px; }
+  .step span { font-size:17px; color:var(--muted); line-height:1.4; display:block; }
+</style>
+</head>
+<body>
+
+<!-- 1. Title -->
+<section class="slide dark">
+  <div style="display:flex; align-items:center; gap:22px; margin-bottom:56px;">
+    <svg width="84" height="84" viewBox="0 0 512 512" aria-hidden="true">
+      <defs><clipPath id="lh"><rect x="0" y="256" width="512" height="256"/></clipPath></defs>
+      <rect width="512" height="512" rx="112" fill="#2a2a27"/>
+      <circle cx="312" cy="256" r="96" fill="none" stroke="#ff8a1f" stroke-width="40"/>
+      <circle cx="200" cy="256" r="96" fill="none" stroke="#f1efe9" stroke-width="40"/>
+      <circle cx="312" cy="256" r="96" fill="none" stroke="#ff8a1f" stroke-width="40" clip-path="url(#lh)"/>
+    </svg>
+    <div class="tag" style="margin:0;">Portaldot Hacker House 2026 / Ecosystem DApps</div>
+  </div>
+  <h1>Bond Market</h1>
+  <p style="font-size:34px; max-width:980px;">A prediction market where the <b style="color:var(--orange)">larger bond</b> decides the result.<br>No oracle. No admin.</p>
+  <p class="muted" style="margin-top:36px; font-size:20px;">Live on Portaldot V3 testnet (chain ID 420420777)<br>github.com/QuyTu9868/bond-market-portaldot</p>
+</section>
+
+<!-- 2. Problem -->
+<section class="slide">
+  <div class="tag">1 / The problem</div>
+  <h2>A prediction market is only as honest<br>as whoever reports the result</h2>
+  <p class="muted" style="max-width:1000px;">A blockchain cannot know "did it rain tomorrow". Someone has to tell it. Today there are two ways, and both have a weak point.</p>
+  <div class="cols c2" style="margin-top:26px;">
+    <div class="card bad"><h3>Pay for an oracle</h3><p>An external data service reports the result. It costs money, adds a third party, and a brand new chain usually has none yet.</p></div>
+    <div class="card bad"><h3>Trust one person</h3><p>The market creator reports, and a contract owner judges disputes. If that person cheats or disappears, everyone loses.</p></div>
+  </div>
+  <div class="foot"><span>Bond Market</span><span>2</span></div>
+</section>
+
+<!-- 3. Solution -->
+<section class="slide">
+  <div class="tag">2 / Our solution</div>
+  <h2>Let money decide: a bond war</h2>
+  <div class="row" style="margin-bottom:28px;">
+    <div class="step"><b>1. Bet</b><span>Anyone bets Yes or No with native tPOT before the deadline.</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>2. Bond</b><span>After the deadline, anyone posts a bond on Yes or No. The first bond opens a window.</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>3. Outbid</b><span>During the window anyone can add bond to either side. A wrong claim can be outbid.</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="step"><b>4. Settle</b><span>Larger total bond wins. Winners share the bets and the losing bonds.</span></div>
+  </div>
+  <div class="cols c2">
+    <div class="card good"><h3>Worked example</h3><p>Ann bets 1 on Yes, Ben bets 3 on No. Chi bonds 5 on Yes, Dan bonds 2 on No. Yes wins: Ann receives 4, Chi receives 7, Ben and Dan receive nothing.</p></div>
+    <div class="card good"><h3>Safety nets</h3><p>Bonds tie, or nobody bonds for 7 days: everyone is refunded. The contract has only 5 write functions. No owner, no admin, no fee.</p></div>
+  </div>
+  <div class="foot"><span>Bond Market</span><span>3</span></div>
+</section>
+
+<!-- 4. Proof -->
+<section class="slide">
+  <div class="tag">3 / It works: proof on Portaldot testnet</div>
+  <h2>Deployed and run end to end</h2>
+  <div class="cols c2">
+    <div>
+      <table>
+        <tr><th>Item</th><th>Value</th></tr>
+        <tr><td>Network</td><td>Portaldot V3 testnet, chain 420420777</td></tr>
+        <tr><td>Contract</td><td class="mono">0xF73AF8c6a914d390A4F17FFa28535aa26c23B659</td></tr>
+        <tr><td>Deploy tx</td><td class="mono">0xa03b90ee...eecaa1</td></tr>
+        <tr><td>Demo flow</td><td>create, bet, bond, finalize, claim: all 5 ran on testnet</td></tr>
+      </table>
+      <p class="muted" style="margin-top:18px; font-size:17px;">All transaction hashes are in the README. The demo video was recorded on the real testnet with an automated wallet.</p>
+    </div>
+    <div class="cols" style="gap:16px; align-content:start;">
+      <div class="card" style="padding:16px 26px;"><div class="big">27</div><p class="muted">unit tests passing</p></div>
+      <div class="card" style="padding:16px 26px;"><div class="big">0</div><p class="muted">high or medium findings (Slither)</p></div>
+      <div class="card"><p><b>Web app</b> (Next.js + wagmi): list, create, bet, bond, finalize, claim, with clear transaction states. Browser end-to-end test passes.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Bond Market</span><span>4</span></div>
+</section>
+
+<!-- 5. Why Portaldot -->
+<section class="slide">
+  <div class="tag">4 / Why Portaldot</div>
+  <h2>A new chain needs apps that work<br>without extra infrastructure</h2>
+  <div class="cols c3">
+    <div class="card"><h3>No oracle needed</h3><p>The result comes from bonds on chain, so the app works on Portaldot from day one, with nothing to integrate.</p></div>
+    <div class="card"><h3>Solidity just works</h3><p>Standard Solidity and Hardhat deploy and run on Portaldot V3 through its EVM layer (pallet_revive). We shipped and ran the full flow there.</p></div>
+    <div class="card"><h3>Native token only</h3><p>Bets and bonds use the chain's own tPOT. No token approvals, no bridge, a simple first experience for new users.</p></div>
+  </div>
+  <div class="card" style="margin-top:24px; border-left:6px solid var(--orange);">
+    <p><b>What we learned building on it:</b> deploying costs a storage deposit, about 530 tPOT for our 6.7 KB contract. On Portaldot, contract size matters, and we plan to shrink ours. This is useful guidance for other builders in the ecosystem.</p>
+  </div>
+  <div class="foot"><span>Bond Market</span><span>5</span></div>
+</section>
+
+<!-- 6. Next -->
+<section class="slide dark">
+  <div class="tag">5 / Why keep building</div>
+  <h2>Next steps, and the limits we know about</h2>
+  <div class="cols c2">
+    <div>
+      <p><b>Product</b></p>
+      <span class="pill o">Late-bond protection</span><span class="pill">Extend the window on last-minute bonds</span><br>
+      <span class="pill">Smaller contract, cheaper deploy</span><span class="pill">Fix input reset and countdown edge cases</span><br>
+      <span class="pill">Test with real MetaMask</span><span class="pill">Independent security review</span>
+    </div>
+    <div>
+      <p><b>Honest limits today</b></p>
+      <p class="muted" style="font-size:20px;">A very rich actor could win a bond war, but must out-bond everyone else combined. The resolution window is fixed, so a late large bond leaves little time to answer. Pool-sharing payouts, no live price like Polymarket. Not audited.</p>
+    </div>
+  </div>
+  <p style="margin-top:34px; font-size:28px;">A fair, oracle-free market primitive for the Portaldot ecosystem: events, community votes, hackathon predictions.</p>
+  <p class="muted" style="font-size:20px;">github.com/QuyTu9868/bond-market-portaldot</p>
+  <div class="foot"><span>Bond Market</span><span>6</span></div>
+</section>
+
+</body>
+</html>
