@@ -36,12 +36,12 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
 
     it("rejects an empty question", async function () { // Câu hỏi trống phải bị từ chối
       const { market, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.createMarket("", bettingEndsAt)).to.be.revertedWith("Question is empty"); // Phải revert
+      await expect(market.createMarket("", bettingEndsAt)).to.be.revertedWithCustomError(market, "QuestionEmpty"); // Phải revert
     });
 
     it("rejects a betting end in the past", async function () { // Hạn cược trong quá khứ phải bị từ chối
       const { market } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.createMarket("Old?", (await time.latest()) - 1)).to.be.revertedWith("Betting end is in the past"); // Phải revert
+      await expect(market.createMarket("Old?", (await time.latest()) - 1)).to.be.revertedWithCustomError(market, "BetEndInPast"); // Phải revert
     });
 
     it("has no admin or creator-only function", async function () { // Chứng minh không có hàm đặc quyền
@@ -68,25 +68,25 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
 
     it("rejects zero value", async function () { // Không gửi tiền phải bị từ chối
       const { market, alice } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.connect(alice).bet(0, YES)).to.be.revertedWith("Send some native token"); // Phải revert
+      await expect(market.connect(alice).bet(0, YES)).to.be.revertedWithCustomError(market, "ZeroValue"); // Phải revert
     });
 
     it("rejects bets after the deadline", async function () { // Hết hạn cược thì không cược nữa
       const { market, alice, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
-      await expect(market.connect(alice).bet(0, YES, { value: E("1") })).to.be.revertedWith("Betting is closed"); // Phải revert
+      await expect(market.connect(alice).bet(0, YES, { value: E("1") })).to.be.revertedWithCustomError(market, "BettingClosed"); // Phải revert
     });
 
     it("rejects an unknown market", async function () { // Id không tồn tại phải bị từ chối
       const { market, alice } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.connect(alice).bet(5, YES, { value: E("1") })).to.be.revertedWith("Unknown market"); // Phải revert
+      await expect(market.connect(alice).bet(5, YES, { value: E("1") })).to.be.revertedWithCustomError(market, "UnknownMarket"); // Phải revert
     });
   });
 
   describe("postBond", function () { // Nhóm test đặt cọc
     it("rejects a bond while betting is still open", async function () { // Chưa hết hạn cược thì chưa được cọc
       const { market, carol } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.connect(carol).postBond(0, YES, { value: E("1") })).to.be.revertedWith("Betting is still open"); // Phải revert
+      await expect(market.connect(carol).postBond(0, YES, { value: E("1") })).to.be.revertedWithCustomError(market, "BettingStillOpen"); // Phải revert
     });
 
     it("opens the window on the first bond", async function () { // Cọc đầu tiên mở cửa sổ phán quyết
@@ -103,7 +103,7 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
       await market.connect(carol).postBond(0, YES, { value: E("1") }); // Cọc đầu tiên
       await endWindow(); // Tua qua hết cửa sổ
-      await expect(market.connect(dave).postBond(0, NO, { value: E("5") })).to.be.revertedWith("Resolution window is over"); // Phải revert
+      await expect(market.connect(dave).postBond(0, NO, { value: E("5") })).to.be.revertedWithCustomError(market, "WindowOver"); // Phải revert
     });
   });
 
@@ -111,14 +111,14 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
     it("reverts when no bond was posted", async function () { // Chưa ai cọc thì chưa chốt được
       const { market, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
-      await expect(market.finalize(0)).to.be.revertedWith("No bond posted yet"); // Phải revert
+      await expect(market.finalize(0)).to.be.revertedWithCustomError(market, "NoBondYet"); // Phải revert
     });
 
     it("reverts before the window is over", async function () { // Cửa sổ chưa hết thì chưa chốt được
       const { market, carol, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
       await market.connect(carol).postBond(0, YES, { value: E("1") }); // Cọc đầu tiên
-      await expect(market.finalize(0)).to.be.revertedWith("Resolution window not over"); // Phải revert
+      await expect(market.finalize(0)).to.be.revertedWithCustomError(market, "WindowNotOver"); // Phải revert
     });
 
     it("refunds all bets when nobody posts a bond for 7 days", async function () { // Không ai cọc trong 7 ngày thì hoàn tiền cược
@@ -126,7 +126,7 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
       await market.connect(alice).bet(0, YES, { value: E("1") }); // Alice cược Yes 1
       await market.connect(bob).bet(0, NO, { value: E("3") }); // Bob cược No 3
       await time.increaseTo(bettingEndsAt + 7 * 24 * 3600 - 5); // Tua tới ngay trước mốc 7 ngày
-      await expect(market.finalize(0)).to.be.revertedWith("No bond posted yet"); // Chưa đủ 7 ngày thì chưa hoàn
+      await expect(market.finalize(0)).to.be.revertedWithCustomError(market, "NoBondYet"); // Chưa đủ 7 ngày thì chưa hoàn
       await time.increaseTo(bettingEndsAt + 7 * 24 * 3600); // Tua tới đúng mốc 7 ngày
       await expect(market.connect(alice).claim(0)).to.changeEtherBalance(alice, E("1")); // Alice lấy lại 1
       await expect(market.connect(bob).claim(0)).to.changeEtherBalance(bob, E("3")); // Bob lấy lại 3
@@ -138,7 +138,7 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
       await market.connect(alice).bet(0, YES, { value: E("1") }); // Alice cược
       await time.increaseTo(bettingEndsAt + 7 * 24 * 3600); // Tua tới mốc 7 ngày
       await market.finalize(0); // Ai đó chốt hoàn tiền
-      await expect(market.connect(carol).postBond(0, YES, { value: E("1") })).to.be.revertedWith("Already finalized"); // Cọc muộn phải revert
+      await expect(market.connect(carol).postBond(0, YES, { value: E("1") })).to.be.revertedWithCustomError(market, "AlreadyFinalized"); // Cọc muộn phải revert
     });
 
     it("picks the side with the larger bond", async function () { // Phe cọc lớn hơn thắng
@@ -188,8 +188,8 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
 
     it("gives the losing side nothing", async function () { // Phe thua không nhận được gì
       const { market, bob, dave } = await loadFixture(yesWinsFixture); // Dựng tình huống
-      await expect(market.connect(bob).claim(0)).to.be.revertedWith("Nothing to claim"); // Bob cược No nên mất
-      await expect(market.connect(dave).claim(0)).to.be.revertedWith("Nothing to claim"); // Dave cọc No nên mất
+      await expect(market.connect(bob).claim(0)).to.be.revertedWithCustomError(market, "NothingToClaim"); // Bob cược No nên mất
+      await expect(market.connect(dave).claim(0)).to.be.revertedWithCustomError(market, "NothingToClaim"); // Dave cọc No nên mất
     });
 
     it("empties the contract once every winner claimed", async function () { // Không còn tiền kẹt trong contract
@@ -214,7 +214,7 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
     it("blocks a second claim", async function () { // Không nhận được hai lần
       const { market, alice } = await loadFixture(yesWinsFixture); // Dựng tình huống
       await market.connect(alice).claim(0); // Nhận lần 1
-      await expect(market.connect(alice).claim(0)).to.be.revertedWith("Already claimed"); // Lần 2 phải revert
+      await expect(market.connect(alice).claim(0)).to.be.revertedWithCustomError(market, "AlreadyClaimed"); // Lần 2 phải revert
     });
 
     it("reverts before the window is over", async function () { // Chưa hết cửa sổ thì chưa nhận được
@@ -222,7 +222,7 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
       await market.connect(alice).bet(0, YES, { value: E("1") }); // Alice cược
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
       await market.connect(carol).postBond(0, YES, { value: E("1") }); // Cọc đầu tiên
-      await expect(market.connect(alice).claim(0)).to.be.revertedWith("Resolution window not over"); // Phải revert
+      await expect(market.connect(alice).claim(0)).to.be.revertedWithCustomError(market, "WindowNotOver"); // Phải revert
     });
 
     it("refunds everyone when the bonds tie", async function () { // Hòa cọc thì hoàn tiền hết
@@ -249,19 +249,44 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
     });
   });
 
-  describe("previewPayout", function () { // Nhóm test xem trước tiền nhận
-    it("matches the real claim", async function () { // Số xem trước phải bằng số nhận thật
-      const { market, alice, bob, carol, dave, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
-      await market.connect(alice).bet(0, YES, { value: E("1") }); // Alice cược Yes 1
-      await market.connect(bob).bet(0, NO, { value: E("3") }); // Bob cược No 3
+  describe("late bond protection", function () { // Nhóm test chống cọc phút chót
+    it("extends the window when a bond arrives in the last quarter", async function () { // Cọc ở phần tư cuối thì kéo dài cửa sổ
+      const { market, carol, dave, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
+      await endBetting(bettingEndsAt); // Tua tới hết hạn cược
+      await market.connect(carol).postBond(0, YES, { value: E("1") }); // Cọc đầu tiên mở cửa sổ 3600 giây
+      const first = Number((await market.markets(0)).windowEnd); // Hạn chốt ban đầu
+      await time.setNextBlockTimestamp(first - 600); // Còn 600 giây, ít hơn một phần tư (900)
+      await market.connect(dave).postBond(0, NO, { value: E("2") }); // Cọc phút chót
+      expect((await market.markets(0)).windowEnd).to.equal(first - 600 + 900); // Hạn chốt mới = lúc cọc + 900
+    });
+
+    it("does not extend the window for an early bond", async function () { // Cọc sớm thì không đổi hạn chốt
+      const { market, carol, dave, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
+      await endBetting(bettingEndsAt); // Tua tới hết hạn cược
+      await market.connect(carol).postBond(0, YES, { value: E("1") }); // Cọc đầu tiên
+      const first = Number((await market.markets(0)).windowEnd); // Hạn chốt ban đầu
+      await time.setNextBlockTimestamp(first - 3000); // Còn 3000 giây, nhiều hơn một phần tư
+      await market.connect(dave).postBond(0, NO, { value: E("2") }); // Cọc sớm
+      expect((await market.markets(0)).windowEnd).to.equal(first); // Hạn chốt không đổi
+    });
+
+    it("gives the other side time to answer a last-second bond", async function () { // Phe kia kịp đáp trả cọc giây cuối
+      const { market, carol, dave, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
       await endBetting(bettingEndsAt); // Tua tới hết hạn cược
       await market.connect(carol).postBond(0, YES, { value: E("5") }); // Carol cọc Yes 5
-      await market.connect(dave).postBond(0, NO, { value: E("2") }); // Dave cọc No 2
-      const previewAlice = await market.previewPayout(0, alice.address); // Xem trước phần của Alice khi chưa chốt
-      const previewBob = await market.previewPayout(0, bob.address); // Xem trước phần của Bob
-      await endWindow(); // Tua qua hết cửa sổ
-      await expect(market.connect(alice).claim(0)).to.changeEtherBalance(alice, previewAlice); // Nhận thật bằng số xem trước
-      expect(previewBob).to.equal(0); // Bob thua nên xem trước bằng 0
+      const first = Number((await market.markets(0)).windowEnd); // Hạn chốt ban đầu
+      await time.setNextBlockTimestamp(first - 1); // Một giây trước hạn chốt
+      await market.connect(dave).postBond(0, NO, { value: E("6") }); // Dave cọc No 6, đang dẫn
+      await time.setNextBlockTimestamp(first + 100); // Đã qua hạn chốt ban đầu nhưng cửa sổ đã được kéo dài
+      await market.connect(carol).postBond(0, YES, { value: E("3") }); // Carol đáp trả, giờ Yes dẫn 8 so với 6
+      await endWindow(); // Tua qua hết cửa sổ đã kéo dài
+      await market.finalize(0); // Chốt
+      expect((await market.markets(0)).result).to.equal(1); // 1 nghĩa là Result.Yes
+    });
+
+    it("rejects a window shorter than 4 seconds", async function () { // Cửa sổ quá ngắn bị từ chối khi deploy
+      const factory = await ethers.getContractFactory("PredictionMarket"); // Bản thiết kế contract
+      await expect(factory.deploy(3)).to.be.revertedWithCustomError(factory, "WindowTooShort"); // Phải revert
     });
   });
 });

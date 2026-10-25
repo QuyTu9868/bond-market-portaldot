@@ -8,24 +8,27 @@ export const marketAbi = parseAbi([ // Chỉ gồm các hàm frontend dùng, kh�
   "function claim(uint256 id)", // Nhận tiền
   "function marketCount() view returns (uint256)", // Số thị trường
   "function markets(uint256) view returns (string question, address creator, uint64 bettingEndsAt, uint64 windowEnd, uint256 poolYes, uint256 poolNo, uint256 bondYes, uint256 bondNo, uint8 result)", // Dữ liệu một thị trường
-  "function previewPayout(uint256 id, address user) view returns (uint256)", // Số tiền sẽ nhận
+  "function positions(uint256, address) view returns (uint256 betYes, uint256 betNo, uint256 bondYes, uint256 bondNo, bool claimed)", // Phần của một người trong một thị trường
   "function NO_BOND_REFUND_DELAY() view returns (uint256)", // Số giây chờ trước khi hoàn tiền nếu không ai cọc
+  "error QuestionEmpty()", "error BetEndInPast()", "error UnknownMarket()", "error BettingClosed()", "error BettingStillOpen()", "error ZeroValue()", "error AlreadyFinalized()", "error WindowOver()", "error WindowNotOver()", "error NoBondYet()", "error AlreadyClaimed()", "error NothingToClaim()", "error PayoutFailed()", // Các lỗi của contract, để viem đọc được tên lỗi khi giao dịch bị từ chối
 ]);
 
 export const RESULT_LABELS = ["Pending", "Yes", "No", "Invalid (refund)"]; // Tên kết quả theo thứ tự enum Result trong contract
 
-const FRIENDLY_ERRORS = { // Đổi lý do revert của contract thành câu dễ hiểu
-  "Betting is closed": "Betting has ended for this market.", // Hết hạn cược
-  "Betting is still open": "Betting is still open, bonds can start after it ends.", // Chưa tới lúc cọc
-  "Resolution window is over": "The resolution window is over, nobody can add bonds now.", // Hết cửa sổ
-  "Resolution window not over": "The resolution window is not over yet.", // Chưa chốt được
-  "No bond posted yet": "Nobody posted a bond yet. Refund opens 7 days after betting ends.", // Chưa ai cọc
-  "Already finalized": "This market is already finalized.", // Đã chốt
-  "Already claimed": "You already claimed.", // Đã nhận
-  "Nothing to claim": "You have nothing to claim on this market.", // Không có gì để nhận
-  "Send some native token": "Enter an amount above zero.", // Thiếu tiền
-  "Question is empty": "Write a question first.", // Câu hỏi trống
-  "Betting end is in the past": "The betting end time must be in the future.", // Hạn cược sai
+const FRIENDLY_ERRORS = { // Đổi tên lỗi của contract thành câu dễ hiểu
+  BettingClosed: "Betting has ended for this market.", // Hết hạn cược
+  BettingStillOpen: "Betting is still open, bonds can start after it ends.", // Chưa tới lúc cọc
+  WindowOver: "The resolution window is over, nobody can add bonds now.", // Hết cửa sổ
+  WindowNotOver: "The resolution window is not over yet.", // Chưa chốt được
+  NoBondYet: "Nobody posted a bond yet. Refund opens 7 days after betting ends.", // Chưa ai cọc
+  AlreadyFinalized: "This market is already finalized.", // Đã chốt
+  AlreadyClaimed: "You already claimed.", // Đã nhận
+  NothingToClaim: "You have nothing to claim on this market.", // Không có gì để nhận
+  ZeroValue: "Enter an amount above zero.", // Thiếu tiền
+  QuestionEmpty: "Write a question first.", // Câu hỏi trống
+  BetEndInPast: "The betting end time must be in the future.", // Hạn cược sai
+  UnknownMarket: "This market does not exist.", // Không có thị trường
+  PayoutFailed: "The payout transfer failed.", // Gửi tiền thất bại
 };
 
 export function friendlyError(error) { // Biến lỗi kỹ thuật thành câu cho người dùng

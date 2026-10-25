@@ -9,7 +9,23 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 /// Cải tiến so với Polymarket: kết quả do cuộc đấu cọc quyết định, không cần oracle (nguồn dữ liệu ngoài).
 /// Ai cũng đặt cọc được cho phe Yes hoặc No trong cửa sổ phán quyết. Hết cửa sổ, phe có tổng cọc lớn hơn thắng.
 /// Cọc phe thua chia cho cọc phe thắng, nên báo sai là mất tiền.
+/// Chống cọc phút chót: cọc đặt trong phần tư cuối của cửa sổ sẽ kéo dài cửa sổ thêm một phần tư, để phe kia kịp đáp trả.
 contract PredictionMarket is ReentrancyGuard {
+    error WindowTooShort(); // Cửa sổ phán quyết phải đủ dài để chia được một phần tư
+    error QuestionEmpty(); // Câu hỏi trống
+    error BetEndInPast(); // Hạn cược ở quá khứ
+    error UnknownMarket(); // Không có thị trường với id này
+    error BettingClosed(); // Đã hết hạn cược
+    error BettingStillOpen(); // Chưa hết hạn cược nên chưa được cọc
+    error ZeroValue(); // Không gửi kèm tiền
+    error AlreadyFinalized(); // Thị trường đã chốt
+    error WindowOver(); // Hết cửa sổ phán quyết, không cọc thêm
+    error WindowNotOver(); // Cửa sổ phán quyết chưa hết, chưa chốt được
+    error NoBondYet(); // Chưa ai đặt cọc và chưa đủ 7 ngày để hoàn tiền
+    error AlreadyClaimed(); // Đã nhận tiền rồi
+    error NothingToClaim(); // Không có gì để nhận
+    error PayoutFailed(); // Gửi tiền thất bại
+
     enum Result { Pending, Yes, No, Invalid } // Kết quả: chưa có, Yes thắng, No thắng, hoặc hòa cọc (hoàn tiền)
 
     struct Market { // Dữ liệu của mỗi thị trường
@@ -35,6 +51,7 @@ contract PredictionMarket is ReentrancyGuard {
     uint256 public constant NO_BOND_REFUND_DELAY = 7 days; // Sau hạn cược 7 ngày mà chưa ai đặt cọc thì hoàn tiền cược cho mọi người
 
     uint256 public immutable resolutionWindow; // Số giây của cửa sổ phán quyết, tính từ lúc có cọc đầu tiên
+    uint256 private immutable extension; // Một phần tư cửa sổ: cọc đặt khi cửa sổ còn ít hơn số này sẽ kéo dài cửa sổ tới đúng số này kể từ lúc đặt
 
     Market[] public markets; // Danh sách mọi thị trường, id là vị trí trong mảng
     mapping(uint256 => mapping(address => Position)) public positions; // Phần của từng người theo từng thị trường
@@ -46,14 +63,15 @@ contract PredictionMarket is ReentrancyGuard {
     event Claimed(uint256 indexed id, address indexed user, uint256 amount); // Báo có người nhận tiền
 
     constructor(uint256 resolutionWindow_) { // Chạy 1 lần lúc deploy
-        require(resolutionWindow_ > 0, "Window is zero"); // Cửa sổ phán quyết phải lớn hơn 0
+        if (resolutionWindow_ < 4) revert WindowTooShort(); // Cửa sổ phải từ 4 giây trở lên để một phần tư lớn hơn 0
         resolutionWindow = resolutionWindow_; // Lưu độ dài cửa sổ
+        extension = resolutionWindow_ / 4; // Lưu thời gian gia hạn
     }
 
     /// @notice Tạo thị trường mới. Người tạo không có quyền đặc biệt nào sau đó.
     function createMarket(string calldata question, uint64 bettingEndsAt) external returns (uint256 id) { // Ai cũng gọi được
-        require(bytes(question).length > 0, "Question is empty"); // Câu hỏi không được trống
-        require(bettingEndsAt > block.timestamp, "Betting end is in the past"); // Hạn cược phải ở tương lai
+        if (bytes(question).length == 0) revert QuestionEmpty(); // Câu hỏi không được trống
+        if (bettingEndsAt <= block.timestamp) revert BetEndInPast(); // Hạn cược phải ở tương lai
         id = markets.length; // Id mới là vị trí tiếp theo trong mảng
         markets.push(Market({ // Thêm thị trường vào danh sách
             question: question, // Câu hỏi
@@ -72,8 +90,8 @@ contract PredictionMarket is ReentrancyGuard {
     /// @notice Cược Yes hoặc No bằng tiền gửi kèm. Chỉ cược được trước hạn cược.
     function bet(uint256 id, bool yes) external payable { // Gửi kèm tiền để cược
         Market storage m = _getMarket(id); // Lấy thị trường, báo lỗi nếu không tồn tại
-        require(block.timestamp < m.bettingEndsAt, "Betting is closed"); // Hết hạn cược thì không cược nữa
-        require(msg.value > 0, "Send some native token"); // Phải gửi kèm tiền
+        if (block.timestamp >= m.bettingEndsAt) revert BettingClosed(); // Hết hạn cược thì không cược nữa
+        if (msg.value == 0) revert ZeroValue(); // Phải gửi kèm tiền
         Position storage p = positions[id][msg.sender]; // Phần của người gọi
         if (yes) { // Cược Yes
             m.poolYes += msg.value; // Cộng vào quỹ Yes
@@ -88,13 +106,15 @@ contract PredictionMarket is ReentrancyGuard {
     /// @notice Đặt cọc cho phe Yes hoặc No sau hạn cược. Cọc đầu tiên mở cửa sổ phán quyết.
     function postBond(uint256 id, bool yes) external payable { // Gửi kèm tiền để cọc
         Market storage m = _getMarket(id); // Lấy thị trường
-        require(block.timestamp >= m.bettingEndsAt, "Betting is still open"); // Chưa hết hạn cược thì chưa được cọc
-        require(msg.value > 0, "Send some native token"); // Phải gửi kèm tiền
-        require(m.result == Result.Pending, "Already finalized"); // Đã chốt (kể cả hoàn tiền do không ai cọc) thì không cọc nữa
+        if (block.timestamp < m.bettingEndsAt) revert BettingStillOpen(); // Chưa hết hạn cược thì chưa được cọc
+        if (msg.value == 0) revert ZeroValue(); // Phải gửi kèm tiền
+        if (m.result != Result.Pending) revert AlreadyFinalized(); // Đã chốt (kể cả hoàn tiền do không ai cọc) thì không cọc nữa
         if (m.windowEnd == 0) { // Đây là cọc đầu tiên
             m.windowEnd = uint64(block.timestamp + resolutionWindow); // Mở cửa sổ phán quyết từ lúc này
         } else { // Đã có cửa sổ
-            require(block.timestamp < m.windowEnd, "Resolution window is over"); // Hết cửa sổ thì không cọc thêm
+            if (block.timestamp >= m.windowEnd) revert WindowOver(); // Hết cửa sổ thì không cọc thêm
+            uint64 minEnd = uint64(block.timestamp + extension); // Cửa sổ phải còn ít nhất chừng này sau cọc này
+            if (m.windowEnd < minEnd) m.windowEnd = minEnd; // Cọc phút chót thì kéo dài cửa sổ để phe kia kịp đáp trả
         } // Hết kiểm tra cửa sổ
         Position storage p = positions[id][msg.sender]; // Phần của người gọi
         if (yes) { // Cọc cho Yes
@@ -117,25 +137,13 @@ contract PredictionMarket is ReentrancyGuard {
         Market storage m = _getMarket(id); // Lấy thị trường
         _finalize(id, m); // Chốt nếu chưa chốt (revert nếu chưa tới lúc)
         Position storage p = positions[id][msg.sender]; // Phần của người gọi
-        require(!p.claimed, "Already claimed"); // Mỗi người chỉ nhận một lần
+        if (p.claimed) revert AlreadyClaimed(); // Mỗi người chỉ nhận một lần
         uint256 amount = _payout(m, p); // Tính số tiền được nhận
-        require(amount > 0, "Nothing to claim"); // Phe thua hoặc không tham gia thì không có gì
+        if (amount == 0) revert NothingToClaim(); // Phe thua hoặc không tham gia thì không có gì
         p.claimed = true; // Đánh dấu đã nhận TRƯỚC khi gửi tiền để chống nhận lặp
         (bool ok, ) = msg.sender.call{value: amount}(""); // Gửi tiền
-        require(ok, "Payout failed"); // Gửi thất bại thì hủy cả giao dịch
+        if (!ok) revert PayoutFailed(); // Gửi thất bại thì hủy cả giao dịch
         emit Claimed(id, msg.sender, amount); // Phát sự kiện
-    }
-
-    /// @notice Số tiền một người sẽ nhận nếu kết quả chốt ngay lúc này. Chỉ đọc, để giao diện hiển thị.
-    function previewPayout(uint256 id, address user) external view returns (uint256) { // Ai cũng xem được
-        Market storage m = _getMarket(id); // Lấy thị trường
-        Position storage p = positions[id][user]; // Phần của người cần xem
-        if (p.claimed) return 0; // Đã nhận rồi thì không còn gì
-        if (m.result != Result.Pending) return _payout(m, p); // Đã chốt thì tính theo kết quả thật
-        if (m.bondYes == m.bondNo) return 0; // Chưa chốt và đang hòa cọc thì chưa có kết quả để tính
-        Market memory preview = m; // Sao chép thị trường để thử chốt mà không ghi dữ liệu
-        preview.result = m.bondYes > m.bondNo ? Result.Yes : Result.No; // Giả sử chốt theo cọc hiện tại
-        return _payout(preview, p); // Tính thử
     }
 
     /// @notice Số thị trường đã tạo, để giao diện biết cần lặp bao nhiêu lần.
@@ -144,19 +152,19 @@ contract PredictionMarket is ReentrancyGuard {
     }
 
     function _getMarket(uint256 id) private view returns (Market storage) { // Lấy thị trường theo id, chỉ dùng nội bộ
-        require(id < markets.length, "Unknown market"); // Id phải tồn tại
+        if (id >= markets.length) revert UnknownMarket(); // Id phải tồn tại
         return markets[id]; // Trả về thị trường
     }
 
     function _finalize(uint256 id, Market storage m) private { // Chốt kết quả, bỏ qua nếu đã chốt
         if (m.result != Result.Pending) return; // Đã chốt rồi thì thôi
         if (m.windowEnd == 0) { // Chưa ai đặt cọc
-            require(block.timestamp >= m.bettingEndsAt + NO_BOND_REFUND_DELAY, "No bond posted yet"); // Chưa đủ 7 ngày thì chờ tiếp
+            if (block.timestamp < m.bettingEndsAt + NO_BOND_REFUND_DELAY) revert NoBondYet(); // Chưa đủ 7 ngày thì chờ tiếp
             m.result = Result.Invalid; // Đủ 7 ngày mà không ai cọc: hoàn tiền cược cho mọi người
             emit Finalized(id, m.result); // Phát sự kiện
             return; // Xong
         } // Hết nhánh không ai cọc
-        require(block.timestamp >= m.windowEnd, "Resolution window not over"); // Cửa sổ chưa hết thì chưa chốt được
+        if (block.timestamp < m.windowEnd) revert WindowNotOver(); // Cửa sổ chưa hết thì chưa chốt được
         if (m.bondYes > m.bondNo) { // Cọc Yes lớn hơn
             m.result = Result.Yes; // Yes thắng
         } else if (m.bondNo > m.bondYes) { // Cọc No lớn hơn

@@ -9,19 +9,28 @@ Dự án đổi sang thị trường dự đoán Yes/No kiểu Polymarket, kết
 ### Quyết định tự đưa ra cho PredictionMarket (cần bạn xác nhận)
 
 1. **Luật phán quyết: phe có tổng cọc lớn hơn thắng.** Ai cũng đặt cọc Yes hoặc No sau hạn cược, trong cửa sổ phán quyết. Cọc phe thua chia cho cọc phe thắng theo tỉ lệ. Hòa cọc thì hoàn tiền tất cả (cược và cọc).
-2. **Cửa sổ phán quyết cố định, bắt đầu từ cọc đầu tiên, không gia hạn.** Rủi ro: ai đó cọc rất lớn ở giây cuối, người khác không kịp đối ứng. Cách vá nếu cần: mỗi cọc mới trong 10 phút cuối gia hạn thêm. Chưa làm vì tránh phức tạp, cần bạn quyết.
+2. **Cửa sổ phán quyết bắt đầu từ cọc đầu tiên và TỰ KÉO DÀI khi có cọc ở phần tư cuối** (v2, bạn duyệt 25/10). Cọc đặt khi cửa sổ còn ít hơn `resolutionWindow / 4` thì hạn chốt dời thành lúc cọc cộng `resolutionWindow / 4`. Không có giới hạn số lần gia hạn, vì mỗi lần cần tiền cọc mới. Cửa sổ tối thiểu 4 giây.
 3. **Không có phí nền tảng, không hàm admin, người tạo thị trường không có quyền gì.** Test `has no admin or creator-only function` chứng minh điều này (chỉ 5 hàm ghi).
 4. **Không ai cọc trong 7 ngày sau hạn cược thì hoàn tiền cược cho mọi người** (`NO_BOND_REFUND_DELAY`, ý tưởng mượn từ repo wager, bạn chọn 7 ngày). Ai cũng gọi `finalize` hoặc `claim` được. Sau khi đã hoàn thì không đặt cọc được nữa.
 5. **Cược thắng chia cả quỹ cược theo tỉ lệ** (không tính phí). Nếu không ai cược phe thắng thì hoàn lại tiền cược cho mọi người.
 6. **Cược một lần ở mức giá cố định, không có giá thay đổi theo thời gian** như Polymarket (không sổ lệnh, không AMM). Đây là chia quỹ (parimutuel), đơn giản nhất.
 7. **Phần lẻ do làm tròn khi chia để lại trong contract** (tối đa vài wei). Chấp nhận được.
 8. **`resolutionWindow` đặt ở constructor** (mặc định 60 giây khi demo, thật nên 24 giờ). Đọc từ `.env` (`RESOLUTION_WINDOW`).
-9. **Thêm `previewPayout`** (chỉ đọc) để giao diện hiện trước số tiền sẽ nhận.
+9. ~~Thêm `previewPayout`~~ ĐÃ BỎ ở v2 để giảm kích thước contract. Frontend tự tính trong `web/lib/payout.js` (cùng công thức với `_payout`, đã kiểm bằng test E2E: nhận 0.7).
 10. **Câu hỏi và hạn cược do người tạo tự nhập; contract không kiểm tra câu hỏi có rõ ràng hay không.** Đây là việc của giao diện hoặc cộng đồng.
+
+### Contract v2 (25/10, CHƯA deploy testnet, chờ bạn duyệt)
+
+- Thêm chống cọc phút chót (xem mục 2), 3 test gia hạn mới. Đã kiểm bằng cách tắt dòng gia hạn: 2 test thất bại, bật lại thì đạt.
+- Đổi mọi `require("...")` thành custom error (`error BettingClosed()` v.v.). Frontend đọc tên lỗi qua ABI và hiện câu dễ hiểu.
+- Bỏ `previewPayout`. Kích thước deploy **6.750 xuống 5.309 byte (giảm 21%)** dù đã thêm tính năng. Ước lượng ban đầu của mình (30 đến 40%) quá lạc quan. Thử `optimizer runs: 1` chỉ giảm thêm 33 byte nên giữ `runs: 200`.
+- Deploy v1 (đã nộp check-in) giữ nguyên trên testnet, file bằng chứng lưu ở `deployments/v1/`.
+- Quét Slither v2: vẫn chỉ Low (timestamp) và Informational (call), không High hay Medium.
 
 ### Đã kiểm tra
 
-- `npm test`: 27 test đạt.
+- `npm test`: 30 test đạt (v2). Bản v1 có 27 test.
+- `npm run test:e2e` (trình duyệt, mạng ảo) đạt với contract v2.
 - `deploy:local` rồi `demo:local` trên mạng ảo: đạt (tạo, cược, cọc, chốt, nhận tiền).
 - Slither (chạy trên máy bạn, 22/10): không có High hoặc Medium. Low: so sánh với `block.timestamp` (cố ý). Informational: gọi `call` để gửi tiền (cố ý, có `nonReentrant` và đánh dấu `claimed` trước khi gửi).
 

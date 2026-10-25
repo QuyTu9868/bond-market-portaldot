@@ -4,7 +4,7 @@
 
 ## Dự án là gì
 
-Thị trường dự đoán Yes/No kiểu Polymarket (ai cũng tạo câu hỏi, cược Yes hoặc No bằng tiền gốc) chạy trên testnet Portaldot V3 (EVM). Cải tiến so với Polymarket: kết quả chốt bằng cuộc đấu cọc, không cần oracle (nguồn dữ liệu ngoài). Sau hạn cược, ai cũng đặt cọc cho Yes hoặc No trong một cửa sổ thời gian; hết cửa sổ, phe có tổng cọc lớn hơn thắng, cọc phe thua chia cho phe thắng. Không hàm admin, người tạo không có quyền gì. Hòa cọc thì hoàn tiền.
+Thị trường dự đoán Yes/No kiểu Polymarket (ai cũng tạo câu hỏi, cược Yes hoặc No bằng tiền gốc) chạy trên testnet Portaldot V3 (EVM). Cải tiến so với Polymarket: kết quả chốt bằng cuộc đấu cọc, không cần oracle (nguồn dữ liệu ngoài). Sau hạn cược, ai cũng đặt cọc cho Yes hoặc No trong một cửa sổ thời gian; hết cửa sổ, phe có tổng cọc lớn hơn thắng, cọc phe thua chia cho phe thắng. Cọc đặt ở phần tư cuối của cửa sổ sẽ kéo dài cửa sổ thêm một phần tư (chống cọc phút chót). Không hàm admin, người tạo không có quyền gì. Hòa cọc thì hoàn tiền.
 
 Thi ở track Ecosystem DApps của Portaldot Hacker House 2026 (DoraHacks). Quyết định thiết kế và việc còn thiếu: `docs/implementation-notes.md`.
 
@@ -52,7 +52,7 @@ Thứ tự build: contract + test local, quét Slither, frontend từ ABI, và d
 Hạn quan trọng: check-in 19:00 ngày 24/10. Nộp bài cuối 11:00 ngày 6/11, sau đó code freeze.
 
 - [x] **CP0 - Tiền kiểm mạng (22/10).** Có ví MetaMask riêng cho thử nghiệm, token test đã về, file `.env` đã điền, `npm install` xong, `npm run check:network` in "CHECKPOINT 0 DAT". Điều kiện đạt: chain ID đúng 420420777, số dư lớn hơn 0, deploy `Ping` và gọi `ping()` thành công. Nếu số dư bằng 0 hoặc deploy lỗi thì DỪNG, hỏi admin Portaldot, không viết thêm gì.
-- [x] **CP1 - Contract và test local.** Code đã có sẵn (`contracts/PredictionMarket.sol`). Chạy `npm test`, 27 test phải đạt.
+- [x] **CP1 - Contract và test local.** Code đã có sẵn (`contracts/PredictionMarket.sol`). Chạy `npm test`, 30 test phải đạt.
 - [x] **CP2 - Quét Slither.** `slither . --filter-paths node_modules`. Không được có lỗi High hoặc Medium. Kết quả đã quét trước: chỉ có Low (dùng timestamp) và Informational (gọi call gửi tiền).
 - [x] **CP3 - Chạy thử local.** Ba lệnh: `npm run node` (terminal 1), `npm run deploy:local` rồi `npm run demo:local` (terminal 2).
 - [x] **CP4 - Deploy testnet (23/10).** `npm run deploy:testnet` rồi `npm run demo:testnet`. Lưu lại thư mục `deployments/` (địa chỉ contract và mã giao dịch). Git commit.
@@ -76,7 +76,7 @@ Hạn quan trọng: check-in 19:00 ngày 24/10. Nộp bài cuối 11:00 ngày 6/
 
 ```
 npm install              # cài thư viện (lần đầu)
-npm test                 # chạy 27 test contract
+npm test                 # chạy 30 test contract
 npm run node             # bật mạng ảo local
 npm run deploy:local     # deploy lên mạng ảo
 npm run demo:local       # chạy kịch bản demo trên mạng ảo

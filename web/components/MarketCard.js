@@ -7,6 +7,7 @@ import { marketAbi, RESULT_LABELS } from "../lib/contract"; // ABI và tên kế
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng
 import { useTx } from "../lib/useTx"; // Hook gửi giao dịch
 import { useChainNow } from "../lib/useChainNow"; // Giờ theo chuỗi
+import { computePayout } from "../lib/payout"; // Tính tiền sẽ nhận (contract không còn hàm xem trước)
 import TxStatus from "./TxStatus"; // Hiện trạng thái giao dịch
 
 const REFUND_DELAY = 7 * 24 * 3600; // Phải khớp NO_BOND_REFUND_DELAY trong contract (7 ngày)
@@ -47,7 +48,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
   const betTx = useTx(onChange); // Giao dịch cược
   const bondTx = useTx(onChange); // Giao dịch cọc
   const finishTx = useTx(onChange); // Giao dịch chốt hoặc nhận tiền
-  const preview = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "previewPayout", args: [BigInt(id), address], chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Số tiền mình sẽ nhận
+  const preview = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "positions", args: [BigInt(id), address], chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Phần của mình trong thị trường này
 
   const end = Number(bettingEndsAt); // Hạn cược (giây)
   const wEnd = Number(windowEnd); // Hạn chốt (giây), 0 nếu chưa ai cọc
@@ -68,14 +69,14 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
     phase = "Betting ended. Post a bond to start the resolution window"; // Mời cọc
     canBond = true; // Cho cọc
   } else if (now < wEnd) { // Đang trong cửa sổ phán quyết
-    phase = `Resolution window, ends in ${formatDuration(wEnd - now)}`; // Đếm ngược cửa sổ
+    phase = `Resolution window, ends in ${formatDuration(wEnd - now)} (a late bond extends it)`; // Đếm ngược cửa sổ, nhắc rằng cọc phút chót kéo dài thêm
     canBond = true; // Cho cọc thêm
   } else { // Hết cửa sổ, chưa chốt
     phase = "Window over, ready to finalize"; // Sẵn sàng chốt
     canFinish = true; // Cho chốt và nhận tiền
   }
 
-  const payout = preview.data ?? 0n; // Số tiền được nhận (0 nếu chưa có)
+  const payout = preview.data ? computePayout(market, preview.data) : 0n; // Số tiền được nhận (0 nếu chưa có)
   const leading = bondYes === bondNo ? "tie" : bondYes > bondNo ? "Yes" : "No"; // Phe đang dẫn đầu về cọc
 
   return ( // Giao diện thẻ

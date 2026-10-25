@@ -23,6 +23,7 @@ Lying is expensive: you must out-bond everyone who disagrees, and they profit by
 
 Extra safety rules:
 
+- **Late-bond protection:** a bond posted in the last quarter of the window extends the window by a quarter, so the other side always has time to answer a last-second bond. Each extension costs the extender real bond money.
 - If bonds tie, or nobody posts a bond within 7 days after betting ends, everyone gets their money back.
 - The contract has only 5 state-changing functions (`createMarket`, `bet`, `postBond`, `finalize`, `claim`). No owner, no admin, no fee. A test checks this.
 
@@ -92,6 +93,8 @@ npm run test:e2e
 
 ## Testnet deployment
 
+> The contract deployed on testnet below is **v1** (submitted for the Week 2 check-in). The code in this repository is **v2**, which adds late-bond protection and a smaller contract. v2 is not deployed yet, the addresses will be updated here when it is.
+
 | Item | Value |
 |---|---|
 | Network | Portaldot V3 testnet (chain ID 420420777) |
@@ -118,7 +121,7 @@ Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT b
 
 ## Tests and security checks
 
-- 27 tests in `test/market.test.js` cover market creation, betting rules, bonds and the resolution window, outcome selection, payouts, refunds (tie, nobody bet on the winner, no bond for 7 days), double claim, and the absence of admin functions.
+- 30 tests in `test/market.test.js` cover market creation, betting rules, bonds and the resolution window, late-bond protection, outcome selection, payouts, refunds (tie, nobody bet on the winner, no bond for 7 days), double claim, and the absence of admin functions.
 - Slither static analysis: no high or medium findings. Two notes: the contract compares against `block.timestamp` (intended, deadlines are in seconds or days and validators can only shift it by seconds), and it sends native token with a low-level call (guarded by `nonReentrant` and marks the position as claimed before sending).
 
 ## Third-party code
@@ -131,7 +134,7 @@ Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT b
 ## Known limitations
 
 - A very rich actor can win the bond war, but must out-bond all other bonders combined.
-- The resolution window is fixed. A large bond in the last seconds leaves no time to respond. A fix (extend the window on late bonds) is possible, see [docs/implementation-notes.md](docs/implementation-notes.md).
+- Late bonds extend the window, but each extension needs fresh bond money, so a very rich actor can keep out-bonding smaller ones. The size of the bond is the defense, not a rule.
 - Pool-sharing (parimutuel) payouts, no live price like the real Polymarket.
 - Not audited.
 
