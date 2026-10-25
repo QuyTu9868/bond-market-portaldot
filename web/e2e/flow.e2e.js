@@ -3,21 +3,26 @@
 // Chạy: npm run test:e2e (trong web/). Dùng trình duyệt Edge cài sẵn trên Windows.
 // Ví giả: window.ethereum chuyển mọi lệnh sang node Hardhat, dùng tài khoản mở sẵn của Hardhat (không cần MetaMask, không có khóa thật).
 const { chromium } = require("playwright-core"); // Điều khiển trình duyệt
+const { encodeFunctionData, parseAbi } = require("viem"); // Mã hóa lệnh gọi contract cho "người dùng khác"
+const MARKET = process.env.MARKET_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Địa chỉ contract trên mạng ảo (lần deploy đầu tiên)
 
 const APP = process.env.APP_URL || "http://localhost:3000"; // Địa chỉ app
 const RPC = "http://127.0.0.1:8545"; // Mạng ảo Hardhat
 const QUESTION = `E2E ${Date.now()}: will this pass?`; // Câu hỏi riêng cho mỗi lần chạy
+const OTHER_QUESTION = `Other user market ${Date.now()}`; // Thị trường do "người khác" tạo, tên riêng cho mỗi lần chạy để tìm cho đúng
+
+async function rpc(method, params) { // Gọi RPC của node Hardhat
+  const res = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) }); // Gửi yêu cầu
+  const json = await res.json(); // Đọc kết quả
+  if (json.error) throw new Error(json.error.message); // Báo lỗi nếu có
+  return json.result; // Trả kết quả
+}
 
 async function main() { // Hàm chính
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || "msedge" }); // Mở Edge (đổi sang "chrome" nếu cần)
   const page = await browser.newPage(); // Mở tab mới
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message)); // In lỗi JS của trang nếu có
-  await page.exposeFunction("rpcCall", async (method, params) => { // Cầu nối từ trang sang node Hardhat
-    const res = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) }); // Gọi RPC
-    const json = await res.json(); // Đọc kết quả
-    if (json.error) throw new Error(json.error.message); // Báo lỗi nếu có
-    return json.result; // Trả kết quả
-  });
+  await page.exposeFunction("rpcCall", rpc); // Cầu nối từ trang sang node Hardhat
   await page.addInitScript(() => { // Giả lập ví MetaMask trước khi trang chạy
     window.ethereum = { isMetaMask: true, on() {}, removeListener() {}, request: async ({ method, params }) => { // Nhận yêu cầu từ app
       if (method === "eth_requestAccounts") return window.rpcCall("eth_accounts", []); // Kết nối ví = lấy tài khoản mở sẵn
@@ -31,12 +36,18 @@ async function main() { // Hàm chính
   await page.getByText("Create a market").waitFor(); step("connect wallet"); // Form tạo xuất hiện sau khi kết nối
 
   await page.fill("input[placeholder^='A Yes/No']", QUESTION); // Nhập câu hỏi
-  await page.locator("label input").fill("0.15"); // Hạn cược 9 giây cho nhanh
+  await page.locator("label input").fill("0.5"); // Hạn cược 30 giây, đủ để làm phép thử thị trường mới xuất hiện
   await page.getByRole("button", { name: "Create market" }).click(); // Tạo thị trường
   const card = page.locator(".card", { hasText: QUESTION }); // Thẻ của thị trường vừa tạo
   await card.waitFor({ timeout: 20000 }); step("create market"); // Thẻ xuất hiện
 
   await card.locator("input[type=number]").fill("0.5"); // Số tiền cược
+  const accounts = await rpc("eth_accounts", []); // Tài khoản mở sẵn của Hardhat
+  const other = encodeFunctionData({ abi: parseAbi(["function createMarket(string question, uint64 bettingEndsAt) returns (uint256)"]), functionName: "createMarket", args: [OTHER_QUESTION, BigInt(Math.floor(Date.now() / 1000) + 3600)] }); // Dữ liệu gọi tạo một thị trường khác
+  await rpc("eth_sendTransaction", [{ from: accounts[1], to: MARKET, data: other, gas: "0x100000" }]); // Người khác tạo thị trường mới trong lúc mình đang gõ
+  await page.getByText(OTHER_QUESTION).waitFor({ timeout: 20000 }); // Trang tự tải lại và hiện thị trường mới
+  if ((await card.locator("input[type=number]").inputValue()) !== "0.5") throw new Error("Amount input was reset when a new market appeared"); // Số đang gõ không được mất
+  step("typed amount survives a new market appearing"); // Qua phép thử lỗi cũ
   await card.getByRole("button", { name: "Bet Yes" }).click(); // Cược Yes
   await card.locator(".status.ok").waitFor({ timeout: 20000 }); step("bet Yes 0.5"); // Cược thành công
 

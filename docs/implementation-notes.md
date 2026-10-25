@@ -51,9 +51,9 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 
 ### Hiện tượng cần bạn quyết có sửa không (đã thấy, chưa sửa)
 
-1. **Ô nhập tiền trong thẻ thị trường bị đặt lại về 0.01** khi gõ ngay sau lúc thẻ mới xuất hiện (thấy khi quay video: gõ 0.05, cược ra 0.01). Chưa xác định nguyên nhân gốc; nghi thẻ bị dựng lại khi giờ ước lượng của chuỗi nhảy qua lại. Người dùng thật có thể mất số đã gõ.
-2. **Giao diện báo "Betting ended" sớm vài giây so với block thật**, bấm cọc đúng lúc đó thì contract từ chối ("Betting is still open"). Nguyên nhân: giờ chuỗi ở giao diện là ước lượng (`useChainNow`). Kịch bản quay phải chờ thêm 6 giây.
-3. **Node RPC testnet đôi khi trả "An unknown RPC error occurred"** (gặp 1 trong 5 lần quay). Chạy lại thì đạt.
+1. **Ô nhập tiền bị đặt lại về 0.01** (thấy khi quay video). ĐÃ SỬA (25/10). Nguyên nhân gốc: danh sách thị trường đọc theo `ids` đảo ngược (mới nhất trước); khi có thị trường mới `ids` đổi, dữ liệu cũ tạm biến mất, mọi thẻ bị gỡ rồi dựng lại nên mất số đang gõ và dòng trạng thái giao dịch. Sửa: đọc id tăng dần, `placeholderData: keepPreviousData`, hiển thị đảo ngược.
+2. **Bấm cược trong vài giây cuối hạn cược có thể bị từ chối** ("Betting is closed"). Lưu ý: ghi chú cũ của mình nói giao diện báo "ended" sớm là SAI, chưa được chứng minh. Nguyên nhân thật: contract kiểm tra giờ của block chứa giao dịch, block đó đến sau lúc bấm vài giây. ĐÃ GIẢM THIỂU: khóa nút cược khi còn dưới 10 giây và hiện cảnh báo. Không tránh hẳn được do là tính chất của chuỗi.
+3. **Node RPC testnet đôi khi trả "An unknown RPC error occurred"** (gặp 1 trong 5 lần quay). Chạy lại thì đạt. Chưa xử lý.
 
 ### Lỗi chập chờn đã thấy
 

@@ -1,6 +1,7 @@
 "use client"; // Chạy ở trình duyệt vì dùng hook của ví
 
 import { useEffect, useState } from "react"; // Hook trạng thái
+import { keepPreviousData } from "@tanstack/react-query"; // Giữ dữ liệu cũ khi đang tải dữ liệu mới
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useReadContract, useReadContracts } from "wagmi"; // Hook ví và đọc chuỗi
 import { marketAbi } from "../lib/contract"; // ABI
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng đích
@@ -17,10 +18,10 @@ export default function Home() { // Trang chủ
 
   const count = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "marketCount", chainId: targetChain.id, query: { enabled: !!marketAddress, refetchInterval: 5000 } }); // Số thị trường, tự tải lại mỗi 5 giây
   const total = Number(count.data ?? 0n); // Đổi sang số thường
-  const ids = Array.from({ length: total }, (_, i) => total - 1 - i); // Danh sách id, mới nhất đứng trước
+  const ids = Array.from({ length: total }, (_, i) => i); // Danh sách id tăng dần, vị trí trong kết quả đọc chính là id, nên thêm thị trường mới không làm lệch dữ liệu cũ
   const list = useReadContracts({ // Đọc dữ liệu mọi thị trường trong một lần gọi
     contracts: ids.map((id) => ({ address: marketAddress, abi: marketAbi, functionName: "markets", args: [BigInt(id)], chainId: targetChain.id })), // Mỗi id một lệnh đọc
-    query: { enabled: total > 0, refetchInterval: 5000 }, // Chỉ đọc khi có thị trường
+    query: { enabled: total > 0, refetchInterval: 5000, placeholderData: keepPreviousData }, // Chỉ đọc khi có thị trường, giữ dữ liệu cũ khi đang tải lại để thẻ không bị gỡ và dựng lại (làm mất số đang gõ)
   });
   function refresh() { // Tải lại sau khi có giao dịch thành công
     count.refetch(); // Tải lại số thị trường
@@ -59,8 +60,8 @@ export default function Home() { // Trang chủ
 
       <h2>Markets</h2>
       {marketAddress && total === 0 && !count.isLoading && <p className="muted">No markets yet. Create the first one.</p>}
-      {ids.map((id, index) => { // Vẽ từng thị trường
-        const data = list.data?.[index]; // Kết quả đọc của thị trường này
+      {[...ids].reverse().map((id) => { // Vẽ từng thị trường, mới nhất đứng trước
+        const data = list.data?.[id]; // Kết quả đọc của thị trường này (vị trí trong danh sách = id)
         if (!data || data.status !== "success") return null; // Chưa có dữ liệu thì bỏ qua
         return <MarketCard key={id} id={id} market={data.result} onChange={refresh} />; // Vẽ thẻ
       })}

@@ -22,9 +22,11 @@ function formatDuration(seconds) { // Đổi số giây thành chữ dễ đọc
   return `${m}m ${s}s`; // Dưới 1 giờ
 }
 
-function AmountAction({ id, fn, label, tx }) { // Ô nhập tiền kèm hai nút Yes và No (dùng cho cược và cọc)
+const CLOSING_SECONDS = 10; // Còn dưới số giây này là hạn cược thì khóa nút cược, vì giao dịch chỉ vào block sau vài giây và có thể bị từ chối
+
+function AmountAction({ id, fn, label, tx, locked }) { // Ô nhập tiền kèm hai nút Yes và No (dùng cho cược và cọc)
   const [amount, setAmount] = useState("0.01"); // Số tiền nhập
-  const valid = Number(amount) > 0; // Số tiền hợp lệ
+  const valid = Number(amount) > 0 && !locked; // Số tiền hợp lệ và chưa bị khóa
   const busy = tx.status === "signing" || tx.status === "confirming"; // Đang xử lý thì khóa nút
   function go(yes) { // Gửi cho phe đã chọn
     tx.send(fn, [BigInt(id), yes], parseEther(amount)); // Gửi giao dịch kèm tiền
@@ -87,7 +89,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
         <div><span className="muted">Bonds No</span><b>{formatEther(bondNo)}</b></div>
       </div>
       {wEnd !== 0 && result === 0 && <p className="muted">Bond leader: {leading}</p>}
-      {canBet && <><AmountAction id={id} fn="bet" label="Bet" tx={betTx} /><TxStatus tx={betTx} /></>}
+      {canBet && <><AmountAction id={id} fn="bet" label="Bet" tx={betTx} locked={end - now <= CLOSING_SECONDS} /><TxStatus tx={betTx} />{end - now <= CLOSING_SECONDS && <p className="muted">Betting is about to close. New bets are paused because they would likely arrive too late.</p>}</>}
       {canBond && <><AmountAction id={id} fn="postBond" label="Bond" tx={bondTx} /><TxStatus tx={bondTx} /></>}
       {canFinish && ( // Nút chốt và nhận tiền
         <div className="action">
