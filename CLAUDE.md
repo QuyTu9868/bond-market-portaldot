@@ -51,13 +51,13 @@ Thứ tự build: contract + test local, quét Slither, frontend từ ABI, và d
 
 Hạn quan trọng: check-in 19:00 ngày 24/10. Nộp bài cuối 11:00 ngày 6/11, sau đó code freeze.
 
-- [ ] **CP0 - Tiền kiểm mạng (22/10).** Có ví MetaMask riêng cho thử nghiệm, token test đã về, file `.env` đã điền, `npm install` xong, `npm run check:network` in "CHECKPOINT 0 DAT". Điều kiện đạt: chain ID đúng 420420777, số dư lớn hơn 0, deploy `Ping` và gọi `ping()` thành công. Nếu số dư bằng 0 hoặc deploy lỗi thì DỪNG, hỏi admin Portaldot, không viết thêm gì.
-- [ ] **CP1 - Contract và test local.** Code đã có sẵn (`contracts/PredictionMarket.sol`). Chạy `npm test`, 27 test phải đạt.
-- [ ] **CP2 - Quét Slither.** `slither . --filter-paths node_modules`. Không được có lỗi High hoặc Medium. Kết quả đã quét trước: chỉ có Low (dùng timestamp) và Informational (gọi call gửi tiền).
-- [ ] **CP3 - Chạy thử local.** Ba lệnh: `npm run node` (terminal 1), `npm run deploy:local` rồi `npm run demo:local` (terminal 2).
-- [ ] **CP4 - Deploy testnet (23/10).** `npm run deploy:testnet` rồi `npm run demo:testnet`. Lưu lại thư mục `deployments/` (địa chỉ contract và mã giao dịch). Git commit.
-- [ ] **CP5 - Hồ sơ check-in (24/10, xong trước 12:00 để có đệm).** Repo GitHub công khai, README đầy đủ, sơ đồ kiến trúc (`docs/architecture.md`), địa chỉ contract và tx hash, video demo dưới 3 phút. Nộp trên DoraHacks trước 19:00. Danh sách chi tiết: `docs/references/checkin-checklist.md`.
-- [ ] **CP6 - Frontend tối thiểu (25/10 đến 30/10).** Next.js + wagmi + RainbowKit: liệt kê thị trường, tạo thị trường, cược, đặt cọc phán quyết, đếm ngược cửa sổ, chốt và nhận tiền. Mọi nút giao dịch phải có đủ trạng thái (chờ ký, đang xác nhận, thành công kèm link explorer, thất bại với câu lỗi dễ hiểu). Test Playwright.
+- [x] **CP0 - Tiền kiểm mạng (22/10).** Có ví MetaMask riêng cho thử nghiệm, token test đã về, file `.env` đã điền, `npm install` xong, `npm run check:network` in "CHECKPOINT 0 DAT". Điều kiện đạt: chain ID đúng 420420777, số dư lớn hơn 0, deploy `Ping` và gọi `ping()` thành công. Nếu số dư bằng 0 hoặc deploy lỗi thì DỪNG, hỏi admin Portaldot, không viết thêm gì.
+- [x] **CP1 - Contract và test local.** Code đã có sẵn (`contracts/PredictionMarket.sol`). Chạy `npm test`, 27 test phải đạt.
+- [x] **CP2 - Quét Slither.** `slither . --filter-paths node_modules`. Không được có lỗi High hoặc Medium. Kết quả đã quét trước: chỉ có Low (dùng timestamp) và Informational (gọi call gửi tiền).
+- [x] **CP3 - Chạy thử local.** Ba lệnh: `npm run node` (terminal 1), `npm run deploy:local` rồi `npm run demo:local` (terminal 2).
+- [x] **CP4 - Deploy testnet (23/10).** `npm run deploy:testnet` rồi `npm run demo:testnet`. Lưu lại thư mục `deployments/` (địa chỉ contract và mã giao dịch). Git commit.
+- [x] **CP5 - Hồ sơ check-in (24/10, xong trước 12:00 để có đệm).** Repo GitHub công khai, README đầy đủ, sơ đồ kiến trúc (`docs/architecture.md`), địa chỉ contract và tx hash, video demo dưới 3 phút. Nộp trên DoraHacks trước 19:00. Danh sách chi tiết: `docs/references/checkin-checklist.md`.
+- [x] **CP6 - Frontend tối thiểu (xong 25/10, chưa thử MetaMask thật).** Next.js + wagmi (không dùng RainbowKit, xem implementation-notes): liệt kê thị trường, tạo thị trường, cược, đặt cọc phán quyết, đếm ngược cửa sổ, chốt và nhận tiền. Mọi nút giao dịch phải có đủ trạng thái (chờ ký, đang xác nhận, thành công kèm link explorer, thất bại với câu lỗi dễ hiểu). Test Playwright (`web/` chạy `npm run test:e2e`).
 - [ ] **CP7 - Hoàn thiện (31/10 đến 4/11).** Pitch deck (PDF), video demo cuối, README hướng dẫn chạy, khai báo thư viện bên thứ ba, kiểm tra lịch sử commit rải đều.
 - [ ] **CP8 - Nộp bài cuối (trước 11:00 ngày 6/11).** Sau đó code freeze, chỉ sửa lỗi nghiêm trọng và báo ban tổ chức.
 
