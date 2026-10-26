@@ -64,12 +64,12 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 7. Dấu "?" cạnh "Bets" và "Bonds" trên thẻ hiện giải thích khi rê chuột, chọn bằng bàn phím hoặc chạm (26/10, đã chụp ảnh kiểm ở tối, sáng và điện thoại). Chưa kiểm bằng trình đọc màn hình.
 8. **Học theo ULTRAMINT (ultramint.xyz, 26/10), chỉ học nguyên tắc, không sao chép logo, chữ hay phông của họ:** tiêu đề serif cỡ lớn với chữ cuối nghiêng và đổi màu (phông Instrument Serif, giấy phép OFL, tải về cùng app lúc build nên cần mạng khi build), quầng sáng cam ở đầu trang chế độ tối, hình chìm là hai vòng của logo, số liệu và đồng hồ bằng chữ đơn cách, nút bo tròn. Nút chuyển sáng/tối giữ nguyên.
 
-### Phóng to giao diện (26/10, bạn yêu cầu thêm 75%, sau đó chê quá to nên giảm còn 60%)
+### Cỡ giao diện (26/10: thử 1.75 rồi 1.6, cuối cùng chốt 1.04 theo ảnh bạn gửi)
 
-- `web/app/globals.css`: từ màn hình rộng 1100px trở lên, `html { zoom: 1.6 }` (gấp 1.6 lần, tức thêm 60%). Lần đầu dùng 1.75 nhưng bạn thấy quá to. Điện thoại giữ nguyên cỡ cũ vì phóng lên sẽ làm trang quá hẹp.
-- Từ 1100 đến 1215px rộng (sau khi phóng chỉ còn khoảng 690 đến 760px) thẻ thị trường xếp một cột; từ 1216px trở lên hai cột.
+- `web/app/globals.css`: từ màn hình rộng 1100px trở lên, `html { zoom: 1.04 }`. Lịch sử: 1.75 (bạn chê quá to), 1.6 (vẫn to), rồi bạn gửi ảnh chụp ở cỡ mong muốn: khung nội dung rộng khoảng 1117px so với 1080px gốc nên mình chốt 1.04. Điện thoại giữ nguyên cỡ cũ.
+- Hai cột thẻ từ 760px trở lên như cũ (đã bỏ luật một cột riêng cho khoảng 1100 đến 1215px vì không còn cần).
 - Đã kiểm: không tràn ngang ở 1280, 1920 và 390px; E2E đạt.
-- Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi mức phóng chỉ cần sửa số 1.6 và mốc 1215px cho khớp (mốc = 760 nhân hệ số, trừ 1).
+- Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi cỡ chỉ cần sửa số 1.04. Nếu phóng lên trên khoảng 1.4 thì phải thêm luật một cột cho khoảng 1100px trở lên (mốc = 760 nhân hệ số).
 
 ### Danh mục thị trường (26/10, bạn chốt 3 danh mục: Sports, Esports, Crypto)
 
