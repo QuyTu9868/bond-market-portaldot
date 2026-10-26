@@ -30,6 +30,7 @@ Extra safety rules:
 ## How it works
 
 - Bets and bonds are paid in the network's native token. No token approval step is needed.
+- Every market has a **category**: Sports, Esports or Crypto. The creator picks it when creating the market, and the web app can filter by it. The category is only a label, it does not change any rule.
 - Bet payout: winners share the whole bet pool in proportion to their bet.
 - Bond payout: winning bonders share the whole bond pool in proportion to their bond.
 - Worked example: Ann bets 1 on Yes, Ben bets 3 on No. Chi bonds 5 on Yes, Dan bonds 2 on No. Yes wins. Ann receives 4, Chi receives 7, Ben and Dan receive nothing.

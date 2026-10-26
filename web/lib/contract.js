@@ -1,17 +1,19 @@
 import { parseAbi } from "viem"; // Đọc ABI dạng chữ cho gọn
 
 export const marketAbi = parseAbi([ // Chỉ gồm các hàm frontend dùng, khớp contracts/PredictionMarket.sol
-  "function createMarket(string question, uint64 bettingEndsAt) returns (uint256)", // Tạo thị trường
+  "function createMarket(string question, uint64 bettingEndsAt, uint8 category) returns (uint256)", // Tạo thị trường
   "function bet(uint256 id, bool yes) payable", // Cược Yes hoặc No
   "function postBond(uint256 id, bool yes) payable", // Đặt cọc phán quyết
   "function finalize(uint256 id)", // Chốt kết quả
   "function claim(uint256 id)", // Nhận tiền
   "function marketCount() view returns (uint256)", // Số thị trường
-  "function markets(uint256) view returns (string question, address creator, uint64 bettingEndsAt, uint64 windowEnd, uint256 poolYes, uint256 poolNo, uint256 bondYes, uint256 bondNo, uint8 result)", // Dữ liệu một thị trường
+  "function markets(uint256) view returns (string question, address creator, uint64 bettingEndsAt, uint64 windowEnd, uint256 poolYes, uint256 poolNo, uint256 bondYes, uint256 bondNo, uint8 result, uint8 category)", // Dữ liệu một thị trường
   "function positions(uint256, address) view returns (uint256 betYes, uint256 betNo, uint256 bondYes, uint256 bondNo, bool claimed)", // Phần của một người trong một thị trường
   "function NO_BOND_REFUND_DELAY() view returns (uint256)", // Số giây chờ trước khi hoàn tiền nếu không ai cọc
   "error QuestionEmpty()", "error BetEndInPast()", "error UnknownMarket()", "error BettingClosed()", "error BettingStillOpen()", "error ZeroValue()", "error AlreadyFinalized()", "error WindowOver()", "error WindowNotOver()", "error NoBondYet()", "error AlreadyClaimed()", "error NothingToClaim()", "error PayoutFailed()", // Các lỗi của contract, để viem đọc được tên lỗi khi giao dịch bị từ chối
 ]);
+
+export const CATEGORIES = ["Sports", "Esports", "Crypto"]; // Tên danh mục theo số thứ tự lưu trong contract (số lạ hiện là "Other")
 
 export const RESULT_LABELS = ["Pending", "Yes", "No", "Invalid (refund)"]; // Tên kết quả theo thứ tự enum Result trong contract
 

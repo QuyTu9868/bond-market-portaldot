@@ -35,7 +35,7 @@ async function main() { // Hàm chính
   const log = {}; // Nơi ghi lại mã giao dịch
 
   const latest = await ethers.provider.getBlock("latest"); // Block mới nhất, lấy giờ của mạng
-  const createTx = await market.createMarket("Demo: will this market resolve Yes?", latest.timestamp + BETTING_SECONDS); // Tạo thị trường
+  const createTx = await market.createMarket("Demo: will this market resolve Yes?", latest.timestamp + BETTING_SECONDS, 2); // Tạo thị trường
   await createTx.wait(); // Chờ xác nhận
   const id = (await market.marketCount()) - 1n; // Thị trường vừa tạo là phần tử cuối
   log.createTxHash = createTx.hash; // Lưu mã giao dịch

@@ -3,7 +3,7 @@
 import { useState } from "react"; // Hook trạng thái
 import { useAccount, useReadContract } from "wagmi"; // Đọc dữ liệu và địa chỉ ví
 import { parseEther } from "viem"; // Đổi đơn vị tiền sang wei
-import { marketAbi, RESULT_LABELS } from "../lib/contract"; // ABI và tên kết quả
+import { marketAbi, RESULT_LABELS, CATEGORIES } from "../lib/contract"; // ABI, tên kết quả và danh mục
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng
 import { useTx } from "../lib/useTx"; // Hook gửi giao dịch
 import { useChainNow } from "../lib/useChainNow"; // Giờ theo chuỗi
@@ -54,7 +54,7 @@ function AmountAction({ id, fn, label, tx, locked }) { // Ô nhập tiền kèm 
 }
 
 export default function MarketCard({ id, market, onChange }) { // Thẻ hiển thị một thị trường
-  const [question, , bettingEndsAt, windowEnd, poolYes, poolNo, bondYes, bondNo, result] = market; // Tách các trường từ contract
+  const [question, , bettingEndsAt, windowEnd, poolYes, poolNo, bondYes, bondNo, result, category] = market; // Tách các trường từ contract
   const { address } = useAccount(); // Địa chỉ ví đang kết nối
   const now = useChainNow(); // Giờ hiện tại theo chuỗi
   const betTx = useTx(onChange); // Giao dịch cược
@@ -108,6 +108,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
   return ( // Giao diện thẻ
     <div className="card">
       <div className="top"><span className={`chip ${chipKind}`}>{chip}</span><span className="time">{timeText}</span></div>
+      <p className="cat">{CATEGORIES[category] ?? "Other"}</p>
       <h3>#{id} {question}</h3>
       <p className="phase">{phase}</p>
 

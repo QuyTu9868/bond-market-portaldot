@@ -12,7 +12,7 @@ async function deployFixture() { // Dựng môi trường test: deploy contract 
   const [creator, alice, bob, carol, dave] = await ethers.getSigners(); // Lấy 5 ví giả: creator tạo thị trường, 4 người còn lại cược hoặc cọc
   const market = await (await ethers.getContractFactory("PredictionMarket")).deploy(WINDOW); // Deploy contract với cửa sổ 1 giờ
   const bettingEndsAt = (await time.latest()) + BETTING_TIME; // Hạn cược là 1000 giây nữa
-  await market.connect(creator).createMarket("Will it rain tomorrow?", bettingEndsAt); // Tạo thị trường số 0
+  await market.connect(creator).createMarket("Will it rain tomorrow?", bettingEndsAt, 2); // Tạo thị trường số 0
   return { market, bettingEndsAt, creator, alice, bob, carol, dave }; // Trả về mọi thứ test cần
 }
 
@@ -34,14 +34,21 @@ describe("PredictionMarket", function () { // Nhóm test của PredictionMarket
       expect(m.bettingEndsAt).to.equal(bettingEndsAt); // Hạn cược đúng
     });
 
+    it("stores the category chosen by the creator", async function () { // Danh mục được lưu đúng
+      const { market, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
+      expect((await market.markets(0)).category).to.equal(2); // Thị trường số 0 tạo với danh mục 2 (Crypto)
+      await market.createMarket("Will Team A win the final?", bettingEndsAt, 1); // Tạo thị trường danh mục 1 (Esports)
+      expect((await market.markets(1)).category).to.equal(1); // Danh mục 1 được lưu
+    });
+
     it("rejects an empty question", async function () { // Câu hỏi trống phải bị từ chối
       const { market, bettingEndsAt } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.createMarket("", bettingEndsAt)).to.be.revertedWithCustomError(market, "QuestionEmpty"); // Phải revert
+      await expect(market.createMarket("", bettingEndsAt, 0)).to.be.revertedWithCustomError(market, "QuestionEmpty"); // Phải revert
     });
 
     it("rejects a betting end in the past", async function () { // Hạn cược trong quá khứ phải bị từ chối
       const { market } = await loadFixture(deployFixture); // Dựng môi trường
-      await expect(market.createMarket("Old?", (await time.latest()) - 1)).to.be.revertedWithCustomError(market, "BetEndInPast"); // Phải revert
+      await expect(market.createMarket("Old?", (await time.latest()) - 1, 0)).to.be.revertedWithCustomError(market, "BetEndInPast"); // Phải revert
     });
 
     it("has no admin or creator-only function", async function () { // Chứng minh không có hàm đặc quyền

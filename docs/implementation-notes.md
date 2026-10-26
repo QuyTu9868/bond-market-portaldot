@@ -63,6 +63,14 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 7. Chưa làm: chữ "Bets" và "Bonds" trên thẻ chưa có tooltip giải thích; chưa kiểm bằng trình đọc màn hình.
 8. **Học theo ULTRAMINT (ultramint.xyz, 26/10), chỉ học nguyên tắc, không sao chép logo, chữ hay phông của họ:** tiêu đề serif cỡ lớn với chữ cuối nghiêng và đổi màu (phông Instrument Serif, giấy phép OFL, tải về cùng app lúc build nên cần mạng khi build), quầng sáng cam ở đầu trang chế độ tối, hình chìm là hai vòng của logo, số liệu và đồng hồ bằng chữ đơn cách, nút bo tròn. Nút chuyển sáng/tối giữ nguyên.
 
+### Danh mục thị trường (26/10, bạn chốt 3 danh mục: Sports, Esports, Crypto)
+
+1. Thêm trường `uint8 category` vào `Market` (xếp ở cuối struct, cùng ô nhớ với `result` nên không tốn thêm ô lưu trữ) và vào sự kiện `MarketCreated`. `createMarket` nhận thêm tham số `category`. Tên danh mục nằm ở giao diện (`CATEGORIES` trong `web/lib/contract.js`), muốn thêm danh mục chỉ cần thêm tên vào danh sách, không phải deploy lại.
+2. **Contract không kiểm tra giá trị danh mục** (tránh thêm byte và phí deploy). Số lạ hiện là "Other" ở giao diện. Hệ quả: người tạo có thể ghi số ngoài 0 đến 2, thị trường vẫn hoạt động bình thường.
+3. Giao diện: ô chọn danh mục trong form tạo, nhãn danh mục trên mỗi thẻ, thanh lọc "All / Sports / Esports / Crypto" kèm số lượng.
+4. Test contract: 31 test đạt (thêm test lưu danh mục). E2E đạt. Contract v2 vẫn chưa deploy testnet, nên danh mục được đưa vào ngay bản deploy đầu tiên của v2.
+5. Đổi chữ ký `createMarket` nên bản v1 đang chạy trên testnet (đã nộp) KHÔNG tương thích với giao diện mới: giao diện chỉ đúng với contract v2.
+
 ### Video demo trên testnet (23/10)
 
 - Kịch bản tự động `web/e2e/record-demo.js` (`npm run record` trong `web/`) mở web app trỏ vào testnet, bấm từng bước, quay video 1280x720 có phụ đề, lưu ở `web/e2e/video/` (không commit, 5.5 MB). Video hiện tại dài 2 phút 13 giây.

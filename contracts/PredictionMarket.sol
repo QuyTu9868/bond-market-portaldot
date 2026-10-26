@@ -38,6 +38,7 @@ contract PredictionMarket is ReentrancyGuard {
         uint256 bondYes; // Tổng tiền cọc phán quyết cho Yes
         uint256 bondNo; // Tổng tiền cọc phán quyết cho No
         Result result; // Kết quả sau khi chốt
+        uint8 category; // Danh mục chủ đề (số thứ tự, tên nằm ở giao diện), chỉ để phân loại, không ảnh hưởng luật cược
     }
 
     struct Position { // Phần của mỗi người trong một thị trường
@@ -56,7 +57,7 @@ contract PredictionMarket is ReentrancyGuard {
     Market[] public markets; // Danh sách mọi thị trường, id là vị trí trong mảng
     mapping(uint256 => mapping(address => Position)) public positions; // Phần của từng người theo từng thị trường
 
-    event MarketCreated(uint256 indexed id, address indexed creator, string question, uint64 bettingEndsAt); // Báo thị trường mới
+    event MarketCreated(uint256 indexed id, address indexed creator, string question, uint64 bettingEndsAt, uint8 category); // Báo thị trường mới
     event BetPlaced(uint256 indexed id, address indexed user, bool yes, uint256 amount); // Báo có người cược
     event BondPosted(uint256 indexed id, address indexed user, bool yes, uint256 amount, uint64 windowEnd); // Báo có người đặt cọc
     event Finalized(uint256 indexed id, Result result); // Báo đã chốt kết quả
@@ -69,7 +70,7 @@ contract PredictionMarket is ReentrancyGuard {
     }
 
     /// @notice Tạo thị trường mới. Người tạo không có quyền đặc biệt nào sau đó.
-    function createMarket(string calldata question, uint64 bettingEndsAt) external returns (uint256 id) { // Ai cũng gọi được
+    function createMarket(string calldata question, uint64 bettingEndsAt, uint8 category) external returns (uint256 id) { // Ai cũng gọi được
         if (bytes(question).length == 0) revert QuestionEmpty(); // Câu hỏi không được trống
         if (bettingEndsAt <= block.timestamp) revert BetEndInPast(); // Hạn cược phải ở tương lai
         id = markets.length; // Id mới là vị trí tiếp theo trong mảng
@@ -82,9 +83,10 @@ contract PredictionMarket is ReentrancyGuard {
             poolNo: 0, // Chưa có cược
             bondYes: 0, // Chưa có cọc
             bondNo: 0, // Chưa có cọc
-            result: Result.Pending // Chưa có kết quả
+            result: Result.Pending, // Chưa có kết quả
+            category: category // Danh mục do người tạo chọn
         })); // Kết thúc thêm
-        emit MarketCreated(id, msg.sender, question, bettingEndsAt); // Phát sự kiện
+        emit MarketCreated(id, msg.sender, question, bettingEndsAt, category); // Phát sự kiện
     }
 
     /// @notice Cược Yes hoặc No bằng tiền gửi kèm. Chỉ cược được trước hạn cược.

@@ -17,7 +17,7 @@ Không oracle, không chủ contract, không trọng tài. Sau hạn cược, ai
 
 ## Vòng đời của một thị trường
 
-1. `createMarket(question, bettingEndsAt)`: tạo câu hỏi và hạn cược. Người tạo không có quyền gì thêm.
+1. `createMarket(question, bettingEndsAt, category)`: tạo câu hỏi, hạn cược và danh mục (số 0 Sports, 1 Esports, 2 Crypto; tên nằm ở giao diện). Danh mục chỉ để phân loại và lọc, không ảnh hưởng luật. Người tạo không có quyền gì thêm.
 2. `bet(id, yes)`: cược Yes hoặc No bằng tiền gốc, trước hạn cược.
 3. `postBond(id, yes)`: sau hạn cược, đặt cọc cho một phe. Cọc đầu tiên mở cửa sổ phán quyết dài `resolutionWindow` giây. Cọc thêm được trong cửa sổ, có thể đặt nhiều lần cho cả hai phe. **Chống cọc phút chót:** nếu cửa sổ còn ít hơn một phần tư (`resolutionWindow / 4`) khi có cọc mới, hạn chốt dời thành lúc đặt cọc cộng một phần tư. Cọc sớm thì không đổi hạn.
 4. `finalize(id)` hoặc `claim(id)`: sau khi hết cửa sổ, chốt kết quả. `claim` tự chốt nếu chưa ai chốt.

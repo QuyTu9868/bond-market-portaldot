@@ -66,5 +66,6 @@ Mỗi thị trường (struct `Market`):
 | poolYes, poolNo | Tổng tiền cược mỗi phe |
 | bondYes, bondNo | Tổng tiền cọc mỗi phe |
 | result | Pending, Yes, No hoặc Invalid |
+| category | Danh mục chủ đề (0 Sports, 1 Esports, 2 Crypto), chỉ để phân loại |
 
 Mỗi người trong mỗi thị trường (struct `Position`): `betYes`, `betNo`, `bondYes`, `bondNo`, `claimed`.

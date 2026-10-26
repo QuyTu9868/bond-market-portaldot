@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"; // Hook trạng thái
 import { keepPreviousData } from "@tanstack/react-query"; // Giữ dữ liệu cũ khi đang tải dữ liệu mới
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useReadContract, useReadContracts } from "wagmi"; // Hook ví và đọc chuỗi
-import { marketAbi } from "../lib/contract"; // ABI
+import { marketAbi, CATEGORIES } from "../lib/contract"; // ABI và danh mục
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng đích
 import { fmt } from "../lib/format"; // Hiện số tiền gọn
 import CreateMarketForm from "../components/CreateMarketForm"; // Form tạo thị trường
@@ -11,6 +11,7 @@ import MarketCard from "../components/MarketCard"; // Thẻ thị trường
 import ThemeToggle from "../components/ThemeToggle"; // Nút chuyển sáng tối
 
 export default function Home() { // Trang chủ
+  const [filter, setFilter] = useState(-1); // Danh mục đang lọc, -1 là tất cả
   const [mounted, setMounted] = useState(false); // Tránh lệch giữa server và trình duyệt khi render
   useEffect(() => setMounted(true), []); // Đánh dấu đã chạy ở trình duyệt
   const { address, isConnected, chainId } = useAccount(); // Trạng thái ví
@@ -35,11 +36,13 @@ export default function Home() { // Trang chủ
   const symbol = targetChain.nativeCurrency.symbol; // Ký hiệu tiền của mạng (tPOT trên testnet)
   let totalBet = 0n; // Tổng tiền đã cược ở mọi thị trường
   let totalBond = 0n; // Tổng tiền đã cọc ở mọi thị trường
+  const perCategory = {}; // Số thị trường theo danh mục
   for (const item of list.data ?? []) { // Cộng dồn từ dữ liệu đã đọc
     if (item.status !== "success") continue; // Bỏ qua thị trường chưa đọc được
     const [, , , , poolYes, poolNo, bondYes, bondNo] = item.result; // Các quỹ của thị trường này
     totalBet += poolYes + poolNo; // Cộng quỹ cược
     totalBond += bondYes + bondNo; // Cộng quỹ cọc
+    perCategory[item.result[9]] = (perCategory[item.result[9]] ?? 0) + 1; // Đếm số thị trường của từng danh mục
   }
 
   return ( // Giao diện trang
@@ -79,11 +82,17 @@ export default function Home() { // Trang chủ
       {!isConnected && marketAddress && <p className="muted">Connect your wallet to create markets, bet and bond. You can read markets without a wallet.</p>}
 
       <h2>Markets</h2>
+      <div className="tabs">
+        <button className={`tab ${filter === -1 ? "active" : ""}`} onClick={() => setFilter(-1)}>All ({total})</button>
+        {CATEGORIES.map((name, index) => <button key={name} className={`tab ${filter === index ? "active" : ""}`} onClick={() => setFilter(index)}>{name} ({perCategory[index] ?? 0})</button>)}
+      </div>
       {marketAddress && total === 0 && !count.isLoading && <p className="muted">No markets yet. Create the first one.</p>}
+      {total > 0 && filter !== -1 && (perCategory[filter] ?? 0) === 0 && <p className="muted">No markets in this category yet.</p>}
       <div className="markets">
         {[...ids].reverse().map((id) => { // Vẽ từng thị trường, mới nhất đứng trước
           const data = list.data?.[id]; // Kết quả đọc của thị trường này (vị trí trong danh sách = id)
           if (!data || data.status !== "success") return null; // Chưa có dữ liệu thì bỏ qua
+          if (filter !== -1 && data.result[9] !== filter) return null; // Đang lọc danh mục khác thì ẩn
           return <MarketCard key={id} id={id} market={data.result} onChange={refresh} />; // Vẽ thẻ
         })}
       </div>

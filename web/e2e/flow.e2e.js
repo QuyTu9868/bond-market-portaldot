@@ -56,7 +56,7 @@ async function main() { // Hàm chính
 
   await card.locator("input[type=number]").fill("0.5"); // Số tiền cược
   const accounts = await rpc("eth_accounts", []); // Tài khoản mở sẵn của Hardhat
-  const other = encodeFunctionData({ abi: parseAbi(["function createMarket(string question, uint64 bettingEndsAt) returns (uint256)"]), functionName: "createMarket", args: [OTHER_QUESTION, BigInt(Math.floor(Date.now() / 1000) + 3600)] }); // Dữ liệu gọi tạo một thị trường khác
+  const other = encodeFunctionData({ abi: parseAbi(["function createMarket(string question, uint64 bettingEndsAt, uint8 category) returns (uint256)"]), functionName: "createMarket", args: [OTHER_QUESTION, BigInt(Math.floor(Date.now() / 1000) + 3600), 1] }); // Dữ liệu gọi tạo một thị trường khác
   await rpc("eth_sendTransaction", [{ from: accounts[1], to: MARKET, data: other, gas: "0x100000" }]); // Người khác tạo thị trường mới trong lúc mình đang gõ
   await page.getByText(OTHER_QUESTION).waitFor({ timeout: 20000 }); // Trang tự tải lại và hiện thị trường mới
   if ((await card.locator("input[type=number]").inputValue()) !== "0.5") throw new Error("Amount input was reset when a new market appeared"); // Số đang gõ không được mất
