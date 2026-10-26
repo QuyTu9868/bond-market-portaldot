@@ -6,7 +6,7 @@
 <style>
   @page { size: 1280px 720px; margin: 0; }
   * { box-sizing: border-box; }
-  :root { --bg:#faf9f6; --fg:#1c1c1a; --muted:#6f6d66; --line:#e2dfd6; --card:#ffffff; --orange:#ff8a1f; --dark:#1c1c1a; --cream:#f1efe9; }
+  :root { --yes:#1d8a4e; --no:#c4432b; --bg:#faf9f6; --fg:#1c1c1a; --muted:#6f6d66; --line:#e2dfd6; --card:#ffffff; --orange:#ff8a1f; --dark:#1c1c1a; --cream:#f1efe9; }
   body { margin:0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color:var(--fg); background:var(--bg); }
   .slide { width:1280px; height:720px; padding:64px 80px; position:relative; page-break-after:always; overflow:hidden; background:var(--bg); }
   .slide:last-child { page-break-after:auto; }
@@ -91,39 +91,63 @@
     <div class="step"><b>4. Settle</b><span>Larger total bond wins. Winners share the bets and the losing bonds.</span></div>
   </div>
   <div class="cols c2">
-    <div class="card good"><h3>Worked example</h3><p>Ann bets 1 on Yes, Ben bets 3 on No. Chi bonds 5 on Yes, Dan bonds 2 on No. Yes wins: Ann receives 4, Chi receives 7, Ben and Dan receive nothing.</p></div>
-    <div class="card good"><h3>Safety nets</h3><p>Bonds tie, or nobody bonds for 7 days: everyone is refunded. The contract has only 5 write functions. No owner, no admin, no fee.</p></div>
+    <div class="card good"><h3>Markets by category</h3><p>Sports, Esports or Crypto. The creator picks a category and the app can filter by it. A category is only a label, it never changes a rule.</p></div>
+    <div class="card good"><h3>Safety nets</h3><p>A bond in the last quarter of the window extends it, so the other side can always answer. Bonds tie, or nobody bonds for 7 days: everyone is refunded. Only 5 write functions, no owner, no admin, no fee.</p></div>
   </div>
   <div class="foot"><span>Bond Market</span><span>3</span></div>
 </section>
 
+<!-- 3b. Who wins and who gets paid -->
+<section class="slide">
+  <div class="tag">3 / How it is decided</div>
+  <h2>Who wins, and who gets paid</h2>
+  <div class="cols c2">
+    <div>
+      <div class="card" style="margin-bottom:14px;"><h3>Layer 1: which side wins</h3><p>After betting closes, anyone bonds on Yes or No. When the window ends, the side with the <b>larger total bond</b> wins.</p></div>
+      <div class="card"><h3>Layer 2: who is paid</h3><p>Winning bettors share the whole <b>bet pool</b>. Winning bonders share the whole <b>bond pool</b>, including the losing bonds. Losers lose what they put in.</p></div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Who</th><th>Action</th><th>Result</th></tr>
+        <tr><td>Ann</td><td>bets 1 on Yes</td><td><b style="color:var(--yes)">gets 4</b></td></tr>
+        <tr><td>Ben</td><td>bets 3 on No</td><td style="color:var(--no)">loses 3</td></tr>
+        <tr><td>Chi</td><td>bonds 5 on Yes</td><td><b style="color:var(--yes)">gets 7</b></td></tr>
+        <tr><td>Dan</td><td>bonds 2 on No</td><td style="color:var(--no)">loses 2</td></tr>
+      </table>
+      <p class="muted" style="margin-top:14px; font-size:17px;">Yes bonds (5) beat No bonds (2), so Yes wins. If Dan bonded 6 before the window closed, No would win instead.</p>
+    </div>
+  </div>
+  <p class="muted" style="font-size:17px; margin-top:12px;">The contract never checks what really happened. Pushing a wrong result means out-bonding everyone who disagrees, and they profit by answering.</p>
+  <div class="foot"><span>Bond Market</span><span>4</span></div>
+</section>
+
 <!-- 4. Proof -->
 <section class="slide">
-  <div class="tag">3 / It works: proof on Portaldot testnet</div>
+  <div class="tag">4 / It works: proof on Portaldot testnet</div>
   <h2>Deployed and run end to end</h2>
   <div class="cols c2">
     <div>
       <table>
         <tr><th>Item</th><th>Value</th></tr>
         <tr><td>Network</td><td>Portaldot V3 testnet, chain 420420777</td></tr>
-        <tr><td>Contract</td><td class="mono">0xF73AF8c6a914d390A4F17FFa28535aa26c23B659</td></tr>
+        <tr><td>Contract (v1, check-in)</td><td class="mono">0xF73AF8c6a914d390A4F17FFa28535aa26c23B659</td></tr>
         <tr><td>Deploy tx</td><td class="mono">0xa03b90ee...eecaa1</td></tr>
         <tr><td>Demo flow</td><td>create, bet, bond, finalize, claim: all 5 ran on testnet</td></tr>
       </table>
       <p class="muted" style="margin-top:18px; font-size:17px;">All transaction hashes are in the README. The demo video was recorded on the real testnet with an automated wallet.</p>
     </div>
     <div class="cols" style="gap:16px; align-content:start;">
-      <div class="card" style="padding:16px 26px;"><div class="big">27</div><p class="muted">unit tests passing</p></div>
+      <div class="card" style="padding:16px 26px;"><div class="big">31</div><p class="muted">unit tests passing</p></div>
       <div class="card" style="padding:16px 26px;"><div class="big">0</div><p class="muted">high or medium findings (Slither)</p></div>
       <div class="card"><p><b>Web app</b> (Next.js + wagmi): list, create, bet, bond, finalize, claim, with clear transaction states. Browser end-to-end test passes.</p></div>
     </div>
   </div>
-  <div class="foot"><span>Bond Market</span><span>4</span></div>
+  <div class="foot"><span>Bond Market</span><span>5</span></div>
 </section>
 
 <!-- 5. Why Portaldot -->
 <section class="slide">
-  <div class="tag">4 / Why Portaldot</div>
+  <div class="tag">5 / Why Portaldot</div>
   <h2>A new chain needs apps that work<br>without extra infrastructure</h2>
   <div class="cols c3">
     <div class="card"><h3>No oracle needed</h3><p>The result comes from bonds on chain, so the app works on Portaldot from day one, with nothing to integrate.</p></div>
@@ -131,30 +155,32 @@
     <div class="card"><h3>Native token only</h3><p>Bets and bonds use the chain's own tPOT. No token approvals, no bridge, a simple first experience for new users.</p></div>
   </div>
   <div class="card" style="margin-top:24px; border-left:6px solid var(--orange);">
-    <p><b>What we learned building on it:</b> deploying costs a storage deposit, about 530 tPOT for our 6.7 KB contract. On Portaldot, contract size matters, and we plan to shrink ours. This is useful guidance for other builders in the ecosystem.</p>
+    <p><b>What we learned building on it:</b> deploying costs a storage deposit, about 530 tPOT for our first 6.7 KB version. On Portaldot, contract size matters, so v2 is 21 percent smaller (5.3 KB) even with new features. This is useful guidance for other builders in the ecosystem.</p>
   </div>
-  <div class="foot"><span>Bond Market</span><span>5</span></div>
+  <div class="foot"><span>Bond Market</span><span>6</span></div>
 </section>
 
 <!-- 6. Next -->
 <section class="slide dark">
-  <div class="tag">5 / Why keep building</div>
+  <div class="tag">6 / Why keep building</div>
   <h2>Next steps, and the limits we know about</h2>
   <div class="cols c2">
     <div>
       <p><b>Product</b></p>
-      <span class="pill o">Late-bond protection</span><span class="pill">Extend the window on last-minute bonds</span><br>
-      <span class="pill">Smaller contract, cheaper deploy</span><span class="pill">Fix input reset and countdown edge cases</span><br>
-      <span class="pill">Test with real MetaMask</span><span class="pill">Independent security review</span>
+      <span class="pill o">Shipped since check-in</span><br>
+      <span class="pill">Late-bond protection</span><span class="pill">Contract 21% smaller</span><br>
+      <span class="pill">Light and dark themes</span><span class="pill">Sports, Esports, Crypto</span><br>
+      <span class="pill o">Next</span><br>
+      <span class="pill">Test with real MetaMask</span><span class="pill">Security review</span><span class="pill">More categories</span>
     </div>
     <div>
       <p><b>Honest limits today</b></p>
-      <p class="muted" style="font-size:20px;">A very rich actor could win a bond war, but must out-bond everyone else combined. The resolution window is fixed, so a late large bond leaves little time to answer. Pool-sharing payouts, no live price like Polymarket. Not audited.</p>
+      <p class="muted" style="font-size:20px;">A very rich actor could still win a bond war, but must out-bond everyone else combined, and late bonds extend the window so others can answer. Pool-sharing payouts, no live price like Polymarket. Not audited.</p>
     </div>
   </div>
-  <p style="margin-top:34px; font-size:28px;">A fair, oracle-free market primitive for the Portaldot ecosystem: events, community votes, hackathon predictions.</p>
+  <p style="margin-top:18px; font-size:25px;">A fair, oracle-free market primitive for the Portaldot ecosystem: events, community votes, hackathon predictions.</p>
   <p class="muted" style="font-size:20px;">github.com/QuyTu9868/bond-market-portaldot</p>
-  <div class="foot"><span>Bond Market</span><span>6</span></div>
+  <div class="foot"><span>Bond Market</span><span>7</span></div>
 </section>
 
 </body>
