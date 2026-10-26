@@ -131,6 +131,12 @@ Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT b
 - Next.js, React, wagmi, viem and TanStack Query (MIT) for the web app. Playwright (Apache 2.0) for the end-to-end test.
 - The idea of a Yes/No market comes from Polymarket. The idea of refunding after a long wait with no resolution was inspired by [0xassou/wager](https://github.com/0xassou/wager). All contract code here was written from scratch for this hackathon, no code was copied.
 
+## AI assistance
+
+Most of the code in this repository (contract, tests, scripts, web app, documents) was written by Claude, Anthropic's AI assistant, working inside Claude Code. The project owner chose the idea, made the design decisions (bond-war resolution instead of an oracle, the 7-day refund, late-bond protection, no admin and no fee, native token only), reviewed every step, ran the tests, and ran the deployment on Portaldot testnet with their own wallet.
+
+The working agreement and every decision the AI had to take on its own are kept in the repository: [CLAUDE.md](CLAUDE.md) (rules and checkpoints) and [docs/implementation-notes.md](docs/implementation-notes.md) (decisions, findings, open issues).
+
 ## Known limitations
 
 - A very rich actor can win the bond war, but must out-bond all other bonders combined.
