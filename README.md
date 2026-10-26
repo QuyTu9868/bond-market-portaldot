@@ -130,6 +130,9 @@ Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT b
 - [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts) (MIT license): ReentrancyGuard.
 - Hardhat and its toolbox for compiling and testing.
 - Next.js, React, wagmi, viem and TanStack Query (MIT) for the web app. Playwright (Apache 2.0) for the end-to-end test.
+- [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif) (SIL Open Font License 1.1) for the large headline, bundled at build time through `next/font`.
+- Slither (static analysis) and Mermaid (diagrams) are used as development tools only, none of their code ships in the app.
+- The visual style (serif headline with an accent word, soft glow, monospace figures) was inspired by general design principles seen on a public landing page. No logos, text, fonts or code were copied.
 - The idea of a Yes/No market comes from Polymarket. The idea of refunding after a long wait with no resolution was inspired by [0xassou/wager](https://github.com/0xassou/wager). All contract code here was written from scratch for this hackathon, no code was copied.
 
 ## AI assistance
