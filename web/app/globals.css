@@ -40,6 +40,9 @@ form.card label { display: block; font-size: 14px; color: var(--muted); margin: 
 .time { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; } /* Đồng hồ đếm ngược */
 .phase { margin: 0 0 4px; font-size: 14px; color: var(--muted); } /* Mô tả giai đoạn */
 .label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 12px 0 5px; text-transform: uppercase; letter-spacing: 0.06em; } /* Nhãn trên thanh Yes No */
+.hint { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-left: 4px; border: 1px solid var(--line); border-radius: 50%; font-style: normal; font-size: 10px; font-weight: 700; color: var(--muted); cursor: help; } /* Dấu hỏi nhỏ cạnh nhãn */
+.hint::after { content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px); width: 240px; max-width: 70vw; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); font-size: 12px; font-weight: 500; line-height: 1.4; letter-spacing: 0; text-transform: none; white-space: normal; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); opacity: 0; pointer-events: none; transition: opacity 0.12s; z-index: 10; } /* Khung giải thích, ẩn cho tới khi rê chuột hoặc bấm vào */
+.hint:hover::after, .hint:focus::after { opacity: 1; } /* Hiện khi rê chuột, chọn bằng bàn phím hoặc chạm trên điện thoại */
 .bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; font-size: 13px; font-weight: 700; color: #ffffff; background: var(--line); } /* Thanh Yes No */
 .bar div { display: flex; align-items: center; padding: 0 12px; white-space: nowrap; min-width: 0; overflow: hidden; } /* Mỗi đoạn của thanh */
 .bar .y { background: var(--yes); } /* Đoạn Yes màu xanh */

@@ -61,7 +61,7 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 4. **Đầu trang**: logo, tên mạng, nút chuyển giao diện, ví; ba ô số liệu (số thị trường, tổng cược, tổng cọc, theo ký hiệu tiền của mạng); điện thoại một cột.
 5. Logo và favicon copy từ `docs/logo/` sang `web/public/logo.svg` và `web/app/icon.svg` (tên khác nhau để không trùng tên file).
 6. Đã kiểm: `npm run build` đạt, `npm run test:e2e` đạt, chụp ảnh thật ở sáng, tối, hệ điều hành tối nhưng chọn sáng, và điện thoại (390px).
-7. Chưa làm: chữ "Bets" và "Bonds" trên thẻ chưa có tooltip giải thích; chưa kiểm bằng trình đọc màn hình.
+7. Dấu "?" cạnh "Bets" và "Bonds" trên thẻ hiện giải thích khi rê chuột, chọn bằng bàn phím hoặc chạm (26/10, đã chụp ảnh kiểm ở tối, sáng và điện thoại). Chưa kiểm bằng trình đọc màn hình.
 8. **Học theo ULTRAMINT (ultramint.xyz, 26/10), chỉ học nguyên tắc, không sao chép logo, chữ hay phông của họ:** tiêu đề serif cỡ lớn với chữ cuối nghiêng và đổi màu (phông Instrument Serif, giấy phép OFL, tải về cùng app lúc build nên cần mạng khi build), quầng sáng cam ở đầu trang chế độ tối, hình chìm là hai vòng của logo, số liệu và đồng hồ bằng chữ đơn cách, nút bo tròn. Nút chuyển sáng/tối giữ nguyên.
 
 ### Danh mục thị trường (26/10, bạn chốt 3 danh mục: Sports, Esports, Crypto)

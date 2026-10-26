@@ -112,10 +112,10 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
       <h3>#{id} {question}</h3>
       <p className="phase">{phase}</p>
 
-      <div className="label"><span>Bets</span><span>{fmt(poolYes + poolNo)}</span></div>
+      <div className="label"><span>Bets <i className="hint" tabIndex={0} data-tip="Money placed on Yes or No before betting closes. Winners share the whole bet pool.">?</i></span><span>{fmt(poolYes + poolNo)}</span></div>
       <SplitBar yes={poolYes} no={poolNo} yesText={`Yes ${fmt(poolYes)}`} noText={`No ${fmt(poolNo)}`} emptyText="No bets yet" />
       {bondYes + bondNo > 0n && <>
-        <div className="label"><span>Bonds</span>{wEnd !== 0 && result === 0 ? <span>Bond leader: {leading}</span> : <span>{fmt(bondYes + bondNo)}</span>}</div>
+        <div className="label"><span>Bonds <i className="hint" tabIndex={0} data-tip="Deposits that decide the result. The side with the larger total bond wins and shares the losing bonds. Bond more to overturn a result.">?</i></span>{wEnd !== 0 && result === 0 ? <span>Bond leader: {leading}</span> : <span>{fmt(bondYes + bondNo)}</span>}</div>
         <SplitBar yes={bondYes} no={bondNo} yesText={`Yes ${fmt(bondYes)}`} noText={`No ${fmt(bondNo)}`} emptyText="No bonds yet" />
       </>}
       {result !== 0 && result !== 3 && <p className="note">Result is decided by bonds, not by bets.</p>}
