@@ -9,3 +9,4 @@ hardhat.sandbox.config.js
 .next/
 deployments/localhost-*.json
 web/e2e/video/
+web/e2e-failure.png

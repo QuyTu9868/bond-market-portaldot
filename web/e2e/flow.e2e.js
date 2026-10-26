@@ -34,6 +34,7 @@ async function txDone(card) { // Chờ giao dịch trên thẻ xong, báo rõ l�
 async function main() { // Hàm chính
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || "msedge", headless: !WATCH, slowMo: WATCH ? 700 : 0, args: WATCH ? ["--window-size=1280,900"] : [] }); // Mở Edge (đổi sang "chrome" nếu cần)
   const page = await browser.newPage(); // Mở tab mới
+  globalThis.__page = page; // Giữ lại để chụp màn hình nếu test thất bại
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message)); // In lỗi JS của trang nếu có
   await page.exposeFunction("rpcCall", rpc); // Cầu nối từ trang sang node Hardhat
   await page.addInitScript(() => { // Giả lập ví MetaMask trước khi trang chạy
@@ -81,7 +82,8 @@ async function main() { // Hàm chính
   console.log("\nE2E PASSED"); // Báo đạt
 }
 
-main().catch((error) => { // Nếu có bước nào lỗi
+main().catch(async (error) => { // Nếu có bước nào lỗi
+  try { await globalThis.__page?.screenshot({ path: "e2e-failure.png", fullPage: true }); } catch (e) { /* Không chụp được thì bỏ qua */ } // Chụp lại trang lúc lỗi để chẩn đoán
   console.log("\nE2E FAILED:", error.message); // In lỗi
   process.exit(1); // Thoát với mã lỗi
 });
