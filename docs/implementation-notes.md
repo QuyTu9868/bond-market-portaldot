@@ -26,6 +26,7 @@ Dự án đổi sang thị trường dự đoán Yes/No kiểu Polymarket, kết
 - Bỏ `previewPayout`. Kích thước deploy **6.750 xuống 5.309 byte (giảm 21%)** dù đã thêm tính năng. Ước lượng ban đầu của mình (30 đến 40%) quá lạc quan. Thử `optimizer runs: 1` chỉ giảm thêm 33 byte nên giữ `runs: 200`.
 - Deploy v1 (đã nộp check-in) giữ nguyên trên testnet, file bằng chứng lưu ở `deployments/v1/`.
 - Quét Slither v2: vẫn chỉ Low (timestamp) và Informational (call), không High hay Medium.
+- Quét lại Slither ngày 26/10, sau khi thêm danh mục (`category`): kết quả y hệt, 2 phát hiện (timestamp mức Low, low-level call mức Informational), không High hay Medium.
 
 ### Đã kiểm tra
 
