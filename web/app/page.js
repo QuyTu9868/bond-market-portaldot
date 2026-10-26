@@ -5,8 +5,10 @@ import { keepPreviousData } from "@tanstack/react-query"; // Giữ dữ liệu c
 import { useAccount, useConnect, useDisconnect, useSwitchChain, useReadContract, useReadContracts } from "wagmi"; // Hook ví và đọc chuỗi
 import { marketAbi } from "../lib/contract"; // ABI
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng đích
+import { fmt } from "../lib/format"; // Hiện số tiền gọn
 import CreateMarketForm from "../components/CreateMarketForm"; // Form tạo thị trường
 import MarketCard from "../components/MarketCard"; // Thẻ thị trường
+import ThemeToggle from "../components/ThemeToggle"; // Nút chuyển sáng tối
 
 export default function Home() { // Trang chủ
   const [mounted, setMounted] = useState(false); // Tránh lệch giữa server và trình duyệt khi render
@@ -30,23 +32,40 @@ export default function Home() { // Trang chủ
 
   if (!mounted) return null; // Chưa sẵn sàng thì chưa vẽ
   const wrongNetwork = isConnected && chainId !== targetChain.id; // Ví đang ở mạng khác
+  const symbol = targetChain.nativeCurrency.symbol; // Ký hiệu tiền của mạng (tPOT trên testnet)
+  let totalBet = 0n; // Tổng tiền đã cược ở mọi thị trường
+  let totalBond = 0n; // Tổng tiền đã cọc ở mọi thị trường
+  for (const item of list.data ?? []) { // Cộng dồn từ dữ liệu đã đọc
+    if (item.status !== "success") continue; // Bỏ qua thị trường chưa đọc được
+    const [, , , , poolYes, poolNo, bondYes, bondNo] = item.result; // Các quỹ của thị trường này
+    totalBet += poolYes + poolNo; // Cộng quỹ cược
+    totalBond += bondYes + bondNo; // Cộng quỹ cọc
+  }
 
   return ( // Giao diện trang
     <main>
       <header>
-        <div>
-          <h1>Bond Market</h1>
-          <p className="muted">Bet Yes or No. The result is decided by whoever bonds more, no oracle, no admin.</p>
-        </div>
-        <div className="wallet">
+        <div className="brand"><img src="/logo.svg" alt="" />Bond Market</div>
+        <div className="header-right">
+          <span className="pill">{targetChain.name}</span>
+          <ThemeToggle />
           {!isConnected && <button disabled={connecting} onClick={() => connect({ connector: connectors[0] })}>Connect wallet</button>}
-          {isConnected && <><span className="muted">{address.slice(0, 6)}...{address.slice(-4)}</span> <button className="ghost" onClick={() => disconnect()}>Disconnect</button></>}
+          {isConnected && <><span className="pill">{address.slice(0, 6)}...{address.slice(-4)}</span><button className="ghost" onClick={() => disconnect()}>Disconnect</button></>}
         </div>
       </header>
 
+      <section className="hero">
+        <h1>Predict. Bond. Settle.</h1>
+        <p>The larger bond decides the result. No oracle, no admin.</p>
+      </section>
+      <div className="stats">
+        <div className="stat"><b>{total}</b><span>Markets</span></div>
+        <div className="stat"><b>{fmt(totalBet)}</b><span>{symbol} bet</span></div>
+        <div className="stat"><b>{fmt(totalBond)}</b><span>{symbol} bonded</span></div>
+      </div>
+
       {connectError && <p className="status error">Could not connect: install MetaMask or unlock it, then try again.</p>}
       {!marketAddress && <p className="status error">Contract address missing. Copy web/.env.local.example to web/.env.local and fill NEXT_PUBLIC_MARKET_ADDRESS.</p>}
-      <p className="muted">Network: {targetChain.name}</p>
 
       {wrongNetwork && ( // Điều kiện tiên quyết: đúng mạng trước khi giao dịch
         <div className="card">
@@ -60,11 +79,13 @@ export default function Home() { // Trang chủ
 
       <h2>Markets</h2>
       {marketAddress && total === 0 && !count.isLoading && <p className="muted">No markets yet. Create the first one.</p>}
-      {[...ids].reverse().map((id) => { // Vẽ từng thị trường, mới nhất đứng trước
-        const data = list.data?.[id]; // Kết quả đọc của thị trường này (vị trí trong danh sách = id)
-        if (!data || data.status !== "success") return null; // Chưa có dữ liệu thì bỏ qua
-        return <MarketCard key={id} id={id} market={data.result} onChange={refresh} />; // Vẽ thẻ
-      })}
+      <div className="markets">
+        {[...ids].reverse().map((id) => { // Vẽ từng thị trường, mới nhất đứng trước
+          const data = list.data?.[id]; // Kết quả đọc của thị trường này (vị trí trong danh sách = id)
+          if (!data || data.status !== "success") return null; // Chưa có dữ liệu thì bỏ qua
+          return <MarketCard key={id} id={id} market={data.result} onChange={refresh} />; // Vẽ thẻ
+        })}
+      </div>
     </main>
   );
 }

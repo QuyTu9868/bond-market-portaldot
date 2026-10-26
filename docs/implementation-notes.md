@@ -52,6 +52,16 @@ Quyết định tự đưa ra (cần bạn xác nhận):
 
 Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "từ chối ký" trên ví thật, chạy trên testnet.
 
+### Giao diện mới (25/10, bạn chọn hướng A sáng + B tối)
+
+1. **Hai chế độ sáng và tối**: theo cài đặt hệ điều hành, có nút "Dark mode / Light mode" để chọn tay (lưu `localStorage`, bọc try/catch). Một đoạn script nhỏ ở `<head>` đặt chế độ trước khi vẽ trang để không bị nháy màu.
+2. **Màu**: cam `#ff8a1f` là màu thương hiệu (nút chính, nhấn mạnh). Xanh lá và đỏ chỉ dành cho Yes và No, kèm chữ ghi trực tiếp trên thanh để người mù màu vẫn đọc được.
+3. **Thẻ thị trường**: nhãn giai đoạn có màu (Betting open xanh; Resolution window, Waiting for bond, Finalize now cam; Finished xám), đồng hồ đếm ngược, thanh Yes/No cho tiền cược và cho tiền cọc, ô "Your payout", chú thích "Result is decided by bonds, not by bets" và nhắc cọc phút chót kéo dài cửa sổ.
+4. **Đầu trang**: logo, tên mạng, nút chuyển giao diện, ví; ba ô số liệu (số thị trường, tổng cược, tổng cọc, theo ký hiệu tiền của mạng); điện thoại một cột.
+5. Logo và favicon copy từ `docs/logo/` sang `web/public/logo.svg` và `web/app/icon.svg` (tên khác nhau để không trùng tên file).
+6. Đã kiểm: `npm run build` đạt, `npm run test:e2e` đạt, chụp ảnh thật ở sáng, tối, hệ điều hành tối nhưng chọn sáng, và điện thoại (390px).
+7. Chưa làm: chữ "Bets" và "Bonds" trên thẻ chưa có tooltip giải thích; chưa kiểm bằng trình đọc màn hình.
+
 ### Video demo trên testnet (23/10)
 
 - Kịch bản tự động `web/e2e/record-demo.js` (`npm run record` trong `web/`) mở web app trỏ vào testnet, bấm từng bước, quay video 1280x720 có phụ đề, lưu ở `web/e2e/video/` (không commit, 5.5 MB). Video hiện tại dài 2 phút 13 giây.

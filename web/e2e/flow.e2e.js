@@ -4,6 +4,7 @@
 // Ví giả: window.ethereum chuyển mọi lệnh sang node Hardhat, dùng tài khoản mở sẵn của Hardhat (không cần MetaMask, không có khóa thật).
 const { chromium } = require("playwright-core"); // Điều khiển trình duyệt
 const { encodeFunctionData, parseAbi } = require("viem"); // Mã hóa lệnh gọi contract cho "người dùng khác"
+const WATCH = process.argv.includes("--watch"); // Chế độ xem: hiện cửa sổ trình duyệt và bấm chậm lại cho người xem theo dõi
 const MARKET = process.env.MARKET_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Địa chỉ contract trên mạng ảo (lần deploy đầu tiên)
 
 const APP = process.env.APP_URL || "http://localhost:3000"; // Địa chỉ app
@@ -18,8 +19,20 @@ async function rpc(method, params) { // Gọi RPC của node Hardhat
   return json.result; // Trả kết quả
 }
 
+async function txDone(card) { // Chờ giao dịch trên thẻ xong, báo lỗi rõ nếu thất bại
+  const status = card.locator(".status.ok, .status.error").first(); // Dòng trạng thái
+  await status.waitFor({ timeout: 30000 }); // Chờ xuất hiện
+  if ((await status.getAttribute("class")).includes("error")) throw new Error("Transaction failed on page: " + (await status.innerText())); // Thất bại thì dừng kèm lý do
+}
+
+async function txDone(card) { // Chờ giao dịch trên thẻ xong, báo rõ lý do nếu thất bại
+  const status = card.locator(".status.ok, .status.error").first(); // Dòng trạng thái
+  await status.waitFor({ timeout: 30000 }); // Chờ xuất hiện
+  if ((await status.getAttribute("class")).includes("error")) throw new Error("Transaction failed on page: " + (await status.innerText())); // Thất bại thì dừng kèm lý do
+}
+
 async function main() { // Hàm chính
-  const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || "msedge" }); // Mở Edge (đổi sang "chrome" nếu cần)
+  const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || "msedge", headless: !WATCH, slowMo: WATCH ? 700 : 0, args: WATCH ? ["--window-size=1280,900"] : [] }); // Mở Edge (đổi sang "chrome" nếu cần)
   const page = await browser.newPage(); // Mở tab mới
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message)); // In lỗi JS của trang nếu có
   await page.exposeFunction("rpcCall", rpc); // Cầu nối từ trang sang node Hardhat
@@ -49,20 +62,21 @@ async function main() { // Hàm chính
   if ((await card.locator("input[type=number]").inputValue()) !== "0.5") throw new Error("Amount input was reset when a new market appeared"); // Số đang gõ không được mất
   step("typed amount survives a new market appearing"); // Qua phép thử lỗi cũ
   await card.getByRole("button", { name: "Bet Yes" }).click(); // Cược Yes
-  await card.locator(".status.ok").waitFor({ timeout: 20000 }); step("bet Yes 0.5"); // Cược thành công
+  await txDone(card); step("bet Yes 0.5"); // Cược thành công
 
   await card.getByText("Betting ended").waitFor({ timeout: 40000 }); step("betting ended"); // Chờ hết hạn cược
   await card.locator("input[type=number]").fill("0.2"); // Số tiền cọc
   await card.getByRole("button", { name: "Bond Yes" }).click(); // Cọc Yes
-  await card.getByText("Bond leader: Yes").waitFor({ timeout: 20000 }); step("bond Yes 0.2, window open"); // Cửa sổ phán quyết mở
+  await txDone(card); await txDone(card); await card.getByText("Bond leader: Yes").waitFor({ timeout: 20000 }); step("bond Yes 0.2, window open"); // Cửa sổ phán quyết mở
 
   await card.getByText("ready to finalize").waitFor({ timeout: 120000 }); step("window over"); // Chờ hết cửa sổ (60 giây khi deploy mặc định)
   await card.getByRole("button", { name: "Finalize" }).click(); // Chốt kết quả
   await card.getByText("Finished: Yes").waitFor({ timeout: 20000 }); step("finalize: Yes wins"); // Yes thắng
 
   await card.getByRole("button", { name: /^Claim 0\.7/ }).click(); // Nhận 0.7 (0.5 cược + 0.2 cọc, vì là người duy nhất ở cả hai quỹ)
-  await card.locator(".status.ok").waitFor({ timeout: 20000 }); step("claim 0.7"); // Nhận thành công
+  await txDone(card); step("claim 0.7"); // Nhận thành công
 
+  if (WATCH) await page.waitForTimeout(6000); // Chế độ xem: dừng vài giây để người xem thấy kết quả cuối
   await browser.close(); // Đóng trình duyệt
   console.log("\nE2E PASSED"); // Báo đạt
 }
