@@ -35,6 +35,35 @@ Extra safety rules:
 - Bond payout: winning bonders share the whole bond pool in proportion to their bond.
 - Worked example: Ann bets 1 on Yes, Ben bets 3 on No. Chi bonds 5 on Yes, Dan bonds 2 on No. Yes wins. Ann receives 4, Chi receives 7, Ben and Dan receive nothing.
 
+### How the winner is decided
+
+```mermaid
+flowchart TD
+    A[Betting open: anyone bets Yes or No] --> B[Betting ends]
+    B --> C[Anyone posts bonds on Yes or No]
+    C --> D{Window still open?}
+    D -->|bond in the last quarter| E[Window extends by a quarter]
+    E --> D
+    D -->|window over| F{Compare total bonds}
+    F -->|Yes bonds larger| G[Yes wins]
+    F -->|No bonds larger| H[No wins]
+    F -->|tie| I[Everyone is refunded]
+    B -.->|no bond for 7 days| I
+    G --> J[Winning bettors share the bet pool. Winning bonders share the bond pool.]
+    H --> J
+```
+
+Two separate layers: the larger total **bond** decides which side wins, then the winning side is paid from two pools.
+
+| Person | Action | Result in the example (Yes wins) |
+|---|---|---|
+| Ann | bets 1 on Yes | receives 4 (the whole bet pool, she is the only Yes bettor) |
+| Ben | bets 3 on No | loses 3 |
+| Chi | bonds 5 on Yes | receives 7 (the whole bond pool, she is the only Yes bonder) |
+| Dan | bonds 2 on No | loses 2 |
+
+The contract never checks what really happened. It relies on incentives: to push a wrong result you must out-bond everyone who disagrees, and they profit by doing so.
+
 Full spec: [docs/references/design-spec.md](docs/references/design-spec.md). Diagrams: [docs/architecture.md](docs/architecture.md).
 
 ## Quick start
