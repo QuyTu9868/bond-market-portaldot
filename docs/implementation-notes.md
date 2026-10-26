@@ -71,6 +71,16 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 - Đã kiểm: không tràn ngang ở 1280, 1920 và 390px; E2E đạt.
 - Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi cỡ chỉ cần sửa số 1.04. Nếu phóng lên trên khoảng 1.4 thì phải thêm luật một cột cho khoảng 1100px trở lên (mốc = 760 nhân hệ số).
 
+### Ô nhập tiền và khối "Who decides?" (26/10, học từ ULTRAMINT, chỉ học nguyên tắc)
+
+- Ước tính tiền nhận ngay dưới ô nhập: "if Yes wins you receive about X, if No wins about Y", tính bằng đúng công thức chia quỹ của contract (`amount x (tổng quỹ + amount) / (quỹ phe đó + amount)`), cho cả cược và cọc. Chỉ là ước tính, đổi khi có người khác tham gia.
+- Nút nhập nhanh 0.01, 0.05, 0.1, 0.5.
+- Kiểm tra số dư ví trước khi cho bấm (`useBalance`): thiếu tiền thì khóa nút và hiện "Not enough balance". Đã thử với số 999999: cảnh báo hiện và nút bị khóa.
+- Mỗi thẻ có khối bấm mở "Who decides?" giải thích: phe cọc lớn hơn thắng, cửa sổ và gia hạn, hoàn tiền khi hòa hoặc không ai cọc sau 7 ngày.
+- Không làm: nút "nhấn giữ để mua" (Hold to buy), biểu đồ xác suất theo thời gian, điểm thưởng, mùa giải, bình luận (cần hạ tầng lớn hoặc dữ liệu lịch sử).
+- Không dùng kiểu "không cần ví" như ULTRAMINT (họ dùng tiền thử nghiệm nội bộ, không qua chuỗi), vì Bond Market cần chạy thật trên Portaldot để có bằng chứng tx.
+- Đã kiểm: E2E đạt, ảnh thật ở chế độ tối và sáng.
+
 ### Danh mục thị trường (26/10, bạn chốt 3 danh mục: Sports, Esports, Crypto)
 
 1. Thêm trường `uint8 category` vào `Market` (xếp ở cuối struct, cùng ô nhớ với `result` nên không tốn thêm ô lưu trữ) và vào sự kiện `MarketCreated`. `createMarket` nhận thêm tham số `category`. Tên danh mục nằm ở giao diện (`CATEGORIES` trong `web/lib/contract.js`), muốn thêm danh mục chỉ cần thêm tên vào danh sách, không phải deploy lại.

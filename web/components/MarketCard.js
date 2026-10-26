@@ -1,7 +1,7 @@
 "use client"; // Chạy ở trình duyệt
 
 import { useState } from "react"; // Hook trạng thái
-import { useAccount, useReadContract } from "wagmi"; // Đọc dữ liệu và địa chỉ ví
+import { useAccount, useBalance, useReadContract } from "wagmi"; // Đọc dữ liệu, số dư và địa chỉ ví
 import { parseEther } from "viem"; // Đổi đơn vị tiền sang wei
 import { marketAbi, RESULT_LABELS, CATEGORIES } from "../lib/contract"; // ABI, tên kết quả và danh mục
 import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng
@@ -37,19 +37,33 @@ function SplitBar({ yes, no, yesText, noText, emptyText }) { // Thanh chia Yes (
   );
 }
 
-function AmountAction({ id, fn, label, tx, locked }) { // Ô nhập tiền kèm hai nút Yes và No (dùng cho cược và cọc)
+function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { // Ô nhập tiền kèm nút nhanh, ước tính tiền nhận và hai nút Yes No (dùng cho cược và cọc)
   const [amount, setAmount] = useState("0.01"); // Số tiền nhập
-  const valid = Number(amount) > 0 && !locked; // Số tiền hợp lệ và chưa bị khóa
+  const { address } = useAccount(); // Ví đang kết nối
+  const balance = useBalance({ address, chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Số dư của ví, để kiểm tra trước khi cho bấm
+  let wei = 0n; // Số tiền nhập đổi sang wei
+  try { wei = parseEther(amount || "0"); } catch (e) { wei = 0n; } // Nhập sai định dạng thì coi như 0
+  const notEnough = balance.data !== undefined && wei > balance.data.value; // Thiếu tiền trong ví
+  const valid = wei > 0n && !locked && !notEnough; // Số tiền hợp lệ, chưa bị khóa và đủ tiền
   const busy = tx.status === "signing" || tx.status === "confirming"; // Đang xử lý thì khóa nút
+  const total = yesPool + noPool; // Tổng quỹ hiện tại
+  const receive = (sidePool) => (wei * (total + wei)) / (sidePool + wei); // Tiền nhận nếu phe này thắng: phần của mình trong quỹ sau khi thêm số tiền này (cùng công thức với contract)
   function go(yes) { // Gửi cho phe đã chọn
-    tx.send(fn, [BigInt(id), yes], parseEther(amount)); // Gửi giao dịch kèm tiền
+    tx.send(fn, [BigInt(id), yes], wei); // Gửi giao dịch kèm tiền
   }
   return ( // Giao diện
-    <div className="action">
-      <input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
-      <button className="yes" disabled={!valid || busy} onClick={() => go(true)}>{label} Yes</button>
-      <button className="no" disabled={!valid || busy} onClick={() => go(false)}>{label} No</button>
-    </div>
+    <>
+      <div className="quick-row">
+        {["0.01", "0.05", "0.1", "0.5"].map((value) => <button key={value} type="button" className="ghost quick" disabled={busy} onClick={() => setAmount(value)}>{value}</button>)}
+      </div>
+      <div className="action">
+        <input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <button className="yes" disabled={!valid || busy} onClick={() => go(true)}>{label} Yes</button>
+        <button className="no" disabled={!valid || busy} onClick={() => go(false)}>{label} No</button>
+      </div>
+      {wei > 0n && <p className="note">Estimate {what}: if Yes wins you receive about {fmt(receive(yesPool))}, if No wins about {fmt(receive(noPool))}. It changes as others join.</p>}
+      {notEnough && <p className="note warn">Not enough balance for this amount. Your balance is {fmt(balance.data.value)}.</p>}
+    </>
   );
 }
 
@@ -121,8 +135,8 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
       {result !== 0 && result !== 3 && <p className="note">Result is decided by bonds, not by bets.</p>}
       {canBond && wEnd !== 0 && <p className="note">A late bond extends the window by a quarter. <b>Outbid to change the result.</b></p>}
 
-      {canBet && <><AmountAction id={id} fn="bet" label="Bet" tx={betTx} locked={closing} /><TxStatus tx={betTx} />{closing && <p className="note">Betting is about to close. New bets are paused because they would likely arrive too late.</p>}</>}
-      {canBond && <><AmountAction id={id} fn="postBond" label="Bond" tx={bondTx} /><TxStatus tx={bondTx} /></>}
+      {canBet && <><AmountAction id={id} fn="bet" label="Bet" tx={betTx} locked={closing} yesPool={poolYes} noPool={poolNo} what="from the bet pool" /><TxStatus tx={betTx} />{closing && <p className="note">Betting is about to close. New bets are paused because they would likely arrive too late.</p>}</>}
+      {canBond && <><AmountAction id={id} fn="postBond" label="Bond" tx={bondTx} yesPool={bondYes} noPool={bondNo} what="from the bond pool" /><TxStatus tx={bondTx} /></>}
       {canFinish && ( // Nút chốt và nhận tiền
         <>
           <div className="result">
@@ -133,6 +147,11 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
           <TxStatus tx={finishTx} />
         </>
       )}
+      <details className="rules">
+        <summary>Who decides?</summary>
+        <p>The side with the larger total bond wins. The contract settles it on chain, there is no oracle and no admin.</p>
+        <p>The window opens with the first bond. A bond in the last quarter of the window extends it. If bonds tie, or nobody bonds for 7 days, everyone is refunded.</p>
+      </details>
     </div>
   );
 }

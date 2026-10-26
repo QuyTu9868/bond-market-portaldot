@@ -50,6 +50,13 @@ form.card label { display: block; font-size: 14px; color: var(--muted); margin: 
 .bar .empty { width: 100%; color: var(--muted); font-weight: 600; } /* Thanh chưa có dữ liệu */
 .note { font-size: 13px; color: var(--muted); margin: 12px 0 0; } /* Ghi chú nhỏ */
 .note b { color: var(--accent-text); } /* Nhấn mạnh trong ghi chú */
+.quick-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; } /* Hàng nút nhập nhanh */
+.quick { padding: 4px 12px; font-size: 13px; font-weight: 600; } /* Nút nhập nhanh nhỏ */
+.quick-row + .action { margin-top: 8px; } /* Hàng nhập tiền sát hàng nút nhanh */
+.note.warn { color: var(--err); } /* Cảnh báo thiếu tiền */
+.rules { margin-top: 14px; font-size: 13px; color: var(--muted); } /* Khối Who decides */
+.rules summary { cursor: pointer; font-weight: 600; color: var(--fg); } /* Dòng bấm để mở */
+.rules p { margin: 8px 0 0; line-height: 1.45; } /* Đoạn giải thích */
 .action { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; } /* Hàng nhập tiền và nút */
 .action input { flex: 1; min-width: 90px; width: auto; margin: 0; } /* Ô nhập tiền */
 input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; } /* Kiểu ô nhập */
