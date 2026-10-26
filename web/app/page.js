@@ -55,7 +55,8 @@ export default function Home() { // Trang chủ
       </header>
 
       <section className="hero">
-        <h1>Predict. Bond. Settle.</h1>
+        <svg className="watermark" viewBox="0 0 512 512" aria-hidden="true"><circle cx="312" cy="256" r="96" fill="none" stroke="var(--accent)" strokeWidth="40" /><circle cx="200" cy="256" r="96" fill="none" stroke="var(--fg)" strokeWidth="40" /></svg>
+        <h1>Predict. Bond. <em>Settle.</em></h1>
         <p>The larger bond decides the result. No oracle, no admin.</p>
       </section>
       <div className="stats">

@@ -1,19 +1,22 @@
-:root { --bg: #faf9f6; --fg: #1c1c1a; --muted: #75736d; --line: #e4e1d9; --card: #ffffff; --accent: #ff8a1f; --onaccent: #1c1c1a; --accent-text: #c2600a; --yes: #1d8a4e; --no: #c4432b; --ok: #1d7a46; --err: #b3261e; --chip-open: #e3f3ea; --chip-open-fg: #1d6b41; --chip-warn: #ffe8cf; --chip-warn-fg: #a4520a; --chip-done: #ecebe6; --chip-done-fg: #55534d; } /* Chế độ sáng (hướng A): nền kem, cam là màu thương hiệu, xanh và đỏ chỉ dành cho Yes và No */
+:root { --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --bg: #faf9f6; --fg: #1c1c1a; --muted: #75736d; --line: #e4e1d9; --card: #ffffff; --accent: #ff8a1f; --onaccent: #1c1c1a; --accent-text: #c2600a; --yes: #1d8a4e; --no: #c4432b; --ok: #1d7a46; --err: #b3261e; --chip-open: #e3f3ea; --chip-open-fg: #1d6b41; --chip-warn: #ffe8cf; --chip-warn-fg: #a4520a; --chip-done: #ecebe6; --chip-done-fg: #55534d; } /* Chế độ sáng (hướng A): nền kem, cam là màu thương hiệu, xanh và đỏ chỉ dành cho Yes và No */
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #121211; --fg: #f1efe9; --muted: #9b988f; --line: #2b2a27; --card: #1b1b19; --accent: #ff8a1f; --onaccent: #121211; --accent-text: #ffa850; --yes: #2fa866; --no: #e2574a; --ok: #5fcf8d; --err: #ff8a80; --chip-open: #16301f; --chip-open-fg: #5fcf8d; --chip-warn: #3a2410; --chip-warn-fg: #ffa850; --chip-done: #262522; --chip-done-fg: #b9b6ac; } } /* Chế độ tối (hướng B) khi hệ điều hành đang dùng tối và người dùng chưa chọn tay */
 :root[data-theme="dark"] { --bg: #121211; --fg: #f1efe9; --muted: #9b988f; --line: #2b2a27; --card: #1b1b19; --accent: #ff8a1f; --onaccent: #121211; --accent-text: #ffa850; --yes: #2fa866; --no: #e2574a; --ok: #5fcf8d; --err: #ff8a80; --chip-open: #16301f; --chip-open-fg: #5fcf8d; --chip-warn: #3a2410; --chip-warn-fg: #ffa850; --chip-done: #262522; --chip-done-fg: #b9b6ac; } /* Chế độ tối khi người dùng bấm nút chuyển */
 * { box-sizing: border-box; } /* Tính kích thước gồm cả viền */
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; } /* Nền và chữ chung */
+body { margin: 0; background: radial-gradient(900px 420px at 50% -80px, color-mix(in srgb, var(--accent) 14%, transparent), transparent), var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5; } /* Nền và chữ chung */
 main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; } /* Cột nội dung giữa trang, lề 16px */
 header { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 24px; } /* Đầu trang, xuống dòng trên màn hình hẹp */
 .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; letter-spacing: -0.01em; } /* Logo và tên */
 .brand img { width: 38px; height: 38px; display: block; } /* Logo */
 .header-right { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; } /* Cụm bên phải đầu trang */
 .pill { padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--muted); font-size: 14px; } /* Nhãn nhỏ (mạng, địa chỉ ví) */
-.hero h1 { margin: 0 0 6px; font-size: 34px; line-height: 1.15; letter-spacing: -0.02em; } /* Tiêu đề lớn */
-.hero p { margin: 0; color: var(--muted); font-size: 16px; } /* Câu mô tả */
-.stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0 26px; } /* Hàng số liệu tổng */
+.hero { position: relative; text-align: center; padding: 40px 0 8px; } /* Phần đầu trang căn giữa, làm mốc cho hình chìm */
+.hero .watermark { position: absolute; left: 50%; top: -52px; width: 340px; height: 340px; transform: translateX(-50%); opacity: 0.06; pointer-events: none; } /* Logo mờ khổng lồ làm hình chìm */
+.hero h1 { position: relative; margin: 0 0 10px; font-family: var(--font-serif), Georgia, "Times New Roman", serif; font-weight: 400; font-size: 64px; line-height: 1.02; letter-spacing: -0.01em; } /* Tiêu đề lớn bằng chữ serif */
+.hero h1 em { font-style: italic; color: var(--accent); } /* Chữ cuối nghiêng và màu cam */
+.hero p { position: relative; margin: 0; color: var(--muted); font-size: 17px; } /* Câu mô tả */
+.stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 22px 0 28px; } /* Hàng số liệu tổng */
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; min-width: 140px; } /* Một ô số liệu */
-.stat b { display: block; font-size: 22px; } /* Con số */
+.stat b { display: block; font-size: 22px; font-family: var(--mono); font-weight: 600; } /* Con số */
 .stat span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; } /* Nhãn số liệu */
 h2 { margin: 28px 0 14px; font-size: 18px; } /* Tiêu đề mục */
 h3 { margin: 0 0 14px; font-size: 19px; line-height: 1.3; } /* Câu hỏi của thị trường */
@@ -29,7 +32,7 @@ form.card label { display: block; font-size: 14px; color: var(--muted); margin: 
 .chip.open { background: var(--chip-open); color: var(--chip-open-fg); } /* Đang cược */
 .chip.warn { background: var(--chip-warn); color: var(--chip-warn-fg); } /* Đang phán quyết hoặc cần hành động */
 .chip.done { background: var(--chip-done); color: var(--chip-done-fg); } /* Đã kết thúc */
-.time { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; } /* Đồng hồ đếm ngược */
+.time { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; } /* Đồng hồ đếm ngược */
 .phase { margin: 0 0 4px; font-size: 14px; color: var(--muted); } /* Mô tả giai đoạn */
 .label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 12px 0 5px; text-transform: uppercase; letter-spacing: 0.06em; } /* Nhãn trên thanh Yes No */
 .bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; font-size: 13px; font-weight: 700; color: #ffffff; background: var(--line); } /* Thanh Yes No */
@@ -42,7 +45,7 @@ form.card label { display: block; font-size: 14px; color: var(--muted); margin: 
 .action { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; } /* Hàng nhập tiền và nút */
 .action input { flex: 1; min-width: 90px; width: auto; margin: 0; } /* Ô nhập tiền */
 input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; } /* Kiểu ô nhập */
-button { padding: 10px 16px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: var(--onaccent); font: inherit; font-weight: 700; cursor: pointer; } /* Nút chính màu cam */
+button { padding: 10px 18px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); color: var(--onaccent); font: inherit; font-weight: 700; cursor: pointer; } /* Nút chính màu cam */
 button.ghost { background: transparent; color: var(--fg); border-color: var(--line); font-weight: 600; } /* Nút phụ */
 button.yes { background: var(--yes); border-color: var(--yes); color: #ffffff; } /* Nút Yes */
 button.no { background: var(--no); border-color: var(--no); color: #ffffff; } /* Nút No */
@@ -56,4 +59,4 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .status.ok { color: var(--ok); } /* Thành công */
 .status.error { color: var(--err); } /* Thất bại */
 a { color: inherit; } /* Link cùng màu chữ */
-@media (max-width: 760px) { .markets { grid-template-columns: 1fr; } .hero h1 { font-size: 28px; } } /* Điện thoại: một cột */
+@media (max-width: 760px) { .markets { grid-template-columns: 1fr; } .hero h1 { font-size: 42px; } .stats { flex-wrap: nowrap; gap: 8px; } .stat { min-width: 0; flex: 1; padding: 10px 12px; } .hero .watermark { width: 240px; height: 240px; top: -30px; } } /* Điện thoại: một cột */
