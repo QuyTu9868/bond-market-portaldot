@@ -64,12 +64,12 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 7. Dấu "?" cạnh "Bets" và "Bonds" trên thẻ hiện giải thích khi rê chuột, chọn bằng bàn phím hoặc chạm (26/10, đã chụp ảnh kiểm ở tối, sáng và điện thoại). Chưa kiểm bằng trình đọc màn hình.
 8. **Học theo ULTRAMINT (ultramint.xyz, 26/10), chỉ học nguyên tắc, không sao chép logo, chữ hay phông của họ:** tiêu đề serif cỡ lớn với chữ cuối nghiêng và đổi màu (phông Instrument Serif, giấy phép OFL, tải về cùng app lúc build nên cần mạng khi build), quầng sáng cam ở đầu trang chế độ tối, hình chìm là hai vòng của logo, số liệu và đồng hồ bằng chữ đơn cách, nút bo tròn. Nút chuyển sáng/tối giữ nguyên.
 
-### Phóng to giao diện (26/10, bạn yêu cầu thêm 75%)
+### Phóng to giao diện (26/10, bạn yêu cầu thêm 75%, sau đó chê quá to nên giảm còn 60%)
 
-- `web/app/globals.css`: từ màn hình rộng 1100px trở lên, `html { zoom: 1.75 }` (gấp 1.75 lần, tức thêm 75%). Điện thoại giữ nguyên cỡ cũ vì phóng 1.75 lần sẽ làm trang quá hẹp.
-- Từ 1100 đến 1329px rộng (sau khi phóng chỉ còn khoảng 630 đến 760px) thẻ thị trường xếp một cột; từ 1330px trở lên hai cột.
+- `web/app/globals.css`: từ màn hình rộng 1100px trở lên, `html { zoom: 1.6 }` (gấp 1.6 lần, tức thêm 60%). Lần đầu dùng 1.75 nhưng bạn thấy quá to. Điện thoại giữ nguyên cỡ cũ vì phóng lên sẽ làm trang quá hẹp.
+- Từ 1100 đến 1215px rộng (sau khi phóng chỉ còn khoảng 690 đến 760px) thẻ thị trường xếp một cột; từ 1216px trở lên hai cột.
 - Đã kiểm: không tràn ngang ở 1280, 1920 và 390px; E2E đạt.
-- Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi mức phóng chỉ cần sửa số 1.75 và các mốc 1329 và 1330px cho khớp (mốc = 760 nhân hệ số).
+- Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi mức phóng chỉ cần sửa số 1.6 và mốc 1215px cho khớp (mốc = 760 nhân hệ số, trừ 1).
 
 ### Danh mục thị trường (26/10, bạn chốt 3 danh mục: Sports, Esports, Crypto)
 
