@@ -10,6 +10,7 @@ import { useChainNow } from "../lib/useChainNow"; // Giờ theo chuỗi
 import { computePayout } from "../lib/payout"; // Tính tiền sẽ nhận (contract không còn hàm xem trước)
 import { fmt } from "../lib/format"; // Hiện số tiền gọn
 import TxStatus from "./TxStatus"; // Hiện trạng thái giao dịch
+import ActivityChart from "./ActivityChart"; // Biểu đồ hoạt động của thị trường
 
 const REFUND_DELAY = 7 * 24 * 3600; // Phải khớp NO_BOND_REFUND_DELAY trong contract (7 ngày)
 const CLOSING_SECONDS = 10; // Còn dưới số giây này là hạn cược thì khóa nút cược, vì giao dịch chỉ vào block sau vài giây và có thể bị từ chối
@@ -37,8 +38,10 @@ function SplitBar({ yes, no, yesText, noText, emptyText }) { // Thanh chia Yes (
   );
 }
 
-function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { // Ô nhập tiền kèm nút nhanh, ước tính tiền nhận và hai nút Yes No (dùng cho cược và cọc)
+function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { // Ô nhập tiền, ước tính, bước xác nhận và biên nhận (dùng cho cược và cọc)
   const [amount, setAmount] = useState("0.01"); // Số tiền nhập
+  const [pendingSide, setPendingSide] = useState(null); // Phe đang chờ xác nhận: null là chưa chọn, true là Yes, false là No
+  const [submitted, setSubmitted] = useState(null); // Điều đã gửi, để hiện biên nhận khi thành công
   const { address } = useAccount(); // Ví đang kết nối
   const balance = useBalance({ address, chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Số dư của ví, để kiểm tra trước khi cho bấm
   let wei = 0n; // Số tiền nhập đổi sang wei
@@ -48,21 +51,37 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
   const busy = tx.status === "signing" || tx.status === "confirming"; // Đang xử lý thì khóa nút
   const total = yesPool + noPool; // Tổng quỹ hiện tại
   const receive = (sidePool) => (wei * (total + wei)) / (sidePool + wei); // Tiền nhận nếu phe này thắng: phần của mình trong quỹ sau khi thêm số tiền này (cùng công thức với contract)
-  function go(yes) { // Gửi cho phe đã chọn
-    tx.send(fn, [BigInt(id), yes], wei); // Gửi giao dịch kèm tiền
+  function confirm() { // Người dùng bấm Confirm: gửi giao dịch thật
+    setSubmitted({ side: pendingSide ? "Yes" : "No", amount: fmt(wei) }); // Nhớ lại để hiện biên nhận
+    tx.send(fn, [BigInt(id), pendingSide], wei); // Gửi giao dịch kèm tiền
+    setPendingSide(null); // Quay về màn hình thường, trạng thái giao dịch hiện bên dưới
   }
-  return ( // Giao diện
+  if (pendingSide !== null) { // Bước xác nhận trước khi ký
+    const side = pendingSide ? "Yes" : "No"; // Tên phe
+    return ( // Thẻ xác nhận
+      <div className="confirm">
+        <p><b>Please confirm:</b> {label} {fmt(wei)} on {side}</p>
+        <p className="note">You pay {fmt(wei)}. Estimate: you receive about {fmt(receive(pendingSide ? yesPool : noPool))} {what} if {side} wins. The final amount may differ if others join first.</p>
+        <div className="action">
+          <button disabled={!valid || busy} onClick={confirm}>Confirm</button>
+          <button className="ghost" onClick={() => setPendingSide(null)}>Cancel</button>
+        </div>
+      </div>
+    );
+  }
+  return ( // Giao diện thường
     <>
       <div className="quick-row">
         {["0.01", "0.05", "0.1", "0.5"].map((value) => <button key={value} type="button" className="ghost quick" disabled={busy} onClick={() => setAmount(value)}>{value}</button>)}
       </div>
       <div className="action">
         <input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        <button className="yes" disabled={!valid || busy} onClick={() => go(true)}>{label} Yes</button>
-        <button className="no" disabled={!valid || busy} onClick={() => go(false)}>{label} No</button>
+        <button className="yes" disabled={!valid || busy} onClick={() => setPendingSide(true)}>{label} Yes</button>
+        <button className="no" disabled={!valid || busy} onClick={() => setPendingSide(false)}>{label} No</button>
       </div>
       {wei > 0n && <p className="note">Estimate {what}: if Yes wins you receive about {fmt(receive(yesPool))}, if No wins about {fmt(receive(noPool))}. It changes as others join.</p>}
       {notEnough && <p className="note warn">Not enough balance for this amount. Your balance is {fmt(balance.data.value)}.</p>}
+      {tx.status === "success" && submitted && <p className="note receipt"><b>Receipt:</b> you {fn === "bet" ? "bet" : "bonded"} {submitted.amount} on {submitted.side}.</p>}
     </>
   );
 }
@@ -118,6 +137,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
   const leading = bondYes === bondNo ? "tie" : bondYes > bondNo ? "Yes" : "No"; // Phe đang dẫn đầu về cọc
   const closing = canBet && end - now <= CLOSING_SECONDS; // Sắp hết hạn cược
   const busy = finishTx.status === "signing" || finishTx.status === "confirming"; // Đang xử lý chốt hoặc nhận tiền
+  const [chartOpen, setChartOpen] = useState(false); // Đã mở biểu đồ chưa (chỉ đọc nhật ký khi mở)
 
   return ( // Giao diện thẻ
     <div className="card">
@@ -147,6 +167,10 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
           <TxStatus tx={finishTx} />
         </>
       )}
+      <details className="rules" onToggle={(e) => setChartOpen(e.currentTarget.open)}>
+        <summary>Activity chart</summary>
+        {chartOpen && <ActivityChart id={id} version={String(poolYes + poolNo + bondYes + bondNo)} />}
+      </details>
       <details className="rules">
         <summary>Who decides?</summary>
         <p>The side with the larger total bond wins. The contract settles it on chain, there is no oracle and no admin.</p>

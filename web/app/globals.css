@@ -50,6 +50,25 @@ form.card label { display: block; font-size: 14px; color: var(--muted); margin: 
 .bar .empty { width: 100%; color: var(--muted); font-weight: 600; } /* Thanh chưa có dữ liệu */
 .note { font-size: 13px; color: var(--muted); margin: 12px 0 0; } /* Ghi chú nhỏ */
 .note b { color: var(--accent-text); } /* Nhấn mạnh trong ghi chú */
+.ticker { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: -10px 0 22px; font-size: 13px; } /* Dải giá tham khảo */
+.ticker .coin { font-family: var(--mono); } /* Giá bằng chữ đơn cách */
+.ticker .up { color: var(--yes); font-style: normal; } /* Giá tăng */
+.ticker .down { color: var(--no); font-style: normal; } /* Giá giảm */
+.confirm { margin-top: 14px; padding: 14px; border: 1px solid var(--accent); border-radius: 12px; background: var(--bg); } /* Khung xác nhận trước khi ký */
+.confirm p { margin: 0 0 8px; } /* Dòng trong khung xác nhận */
+.note.receipt { color: var(--ok); } /* Biên nhận sau khi thành công */
+.chart { margin-top: 10px; } /* Khối biểu đồ */
+.chart svg { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; } /* Khung SVG */
+.chart .grid-line { stroke: var(--line); stroke-width: 0.5; } /* Đường lưới */
+.chart .axis { fill: var(--muted); font-size: 7px; } /* Nhãn trục */
+.chart .line-bet { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 2; } /* Đường tỉ lệ cược, nét đứt */
+.chart .line-bond { fill: none; stroke: var(--accent); stroke-width: 2; } /* Đường tỉ lệ cọc, nét liền cam */
+.chart .dot-bet { fill: var(--muted); } /* Điểm cược */
+.chart .dot-bond { fill: var(--accent); } /* Điểm cọc */
+.chart .legend { margin: 8px 0 0; font-size: 12px; color: var(--muted); } /* Chú giải */
+.chart .key { display: inline-block; width: 14px; height: 0; border-top: 2px solid; vertical-align: middle; margin: 0 4px 0 8px; } /* Ô màu chú giải */
+.chart .key.bet { border-color: var(--muted); border-top-style: dashed; } /* Chú giải cược */
+.chart .key.bond { border-color: var(--accent); } /* Chú giải cọc */
 .quick-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; } /* Hàng nút nhập nhanh */
 .quick { padding: 4px 12px; font-size: 13px; font-weight: 600; } /* Nút nhập nhanh nhỏ */
 .quick-row + .action { margin-top: 8px; } /* Hàng nhập tiền sát hàng nút nhanh */

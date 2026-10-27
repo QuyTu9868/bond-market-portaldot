@@ -71,6 +71,13 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 - Đã kiểm: không tràn ngang ở 1280, 1920 và 390px; E2E đạt.
 - Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi cỡ chỉ cần sửa số 1.04. Nếu phóng lên trên khoảng 1.4 thì phải thêm luật một cột cho khoảng 1100px trở lên (mốc = 760 nhân hệ số).
 
+### Dải giá, biểu đồ hoạt động, bước xác nhận và biên nhận (27/10, học từ ULTRAMINT)
+
+- **Dải giá BTC, ETH, SOL** (`web/components/PriceTicker.js`): gọi API công khai của CoinGecko mỗi 60 giây, chỉ để tham khảo, ghi rõ "never decide a market". Đã kiểm trước: API trả giá và cho phép gọi từ trình duyệt. Lỗi mạng hoặc bị giới hạn thì giữ giá cũ và không báo lỗi. KHÔNG dùng giá để tự chốt kết quả vì làm vậy cần oracle (trái với điểm bán hàng "no oracle").
+- **Biểu đồ hoạt động** (`web/components/ActivityChart.js`): mở trong mỗi thẻ ("Activity chart"), đọc nhật ký sự kiện `BetPlaced` và `BondPosted` của đúng thị trường bằng `getLogs` rồi vẽ SVG hai đường: tỉ lệ Yes của cược (nét đứt xám) và của cọc (nét liền cam, quyết định kết quả). Mỗi bước là một lệnh, không phải theo thời gian thực (để khỏi gọi thêm RPC lấy thời gian block). Đã kiểm trước trên RPC testnet: `eth_getLogs` từ block 0 chạy được với contract v1. Chỉ đọc khi người dùng mở biểu đồ.
+- **Bước xác nhận trước khi ký** và **biên nhận** (trong `AmountAction`): bấm Bet hoặc Bond thì hiện "Please confirm" kèm số tiền, ước tính và nút Confirm hoặc Cancel; thành công thì hiện "Receipt: you bet X on Yes". Bài test E2E và kịch bản quay video đã thêm bước bấm Confirm.
+- Đã kiểm: E2E đạt, ảnh thật ở chế độ tối.
+
 ### Ô nhập tiền và khối "Who decides?" (26/10, học từ ULTRAMINT, chỉ học nguyên tắc)
 
 - Ước tính tiền nhận ngay dưới ô nhập: "if Yes wins you receive about X, if No wins about Y", tính bằng đúng công thức chia quỹ của contract (`amount x (tổng quỹ + amount) / (quỹ phe đó + amount)`), cho cả cược và cọc. Chỉ là ước tính, đổi khi có người khác tham gia.

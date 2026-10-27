@@ -63,11 +63,13 @@ async function main() { // Hàm chính
   if ((await card.locator("input[type=number]").inputValue()) !== "0.5") throw new Error("Amount input was reset when a new market appeared"); // Số đang gõ không được mất
   step("typed amount survives a new market appearing"); // Qua phép thử lỗi cũ
   await card.getByRole("button", { name: "Bet Yes" }).click(); // Cược Yes
+  await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận ở bước xác nhận mới
   await txDone(card); step("bet Yes 0.5"); // Cược thành công
 
   await card.getByText("Betting ended").waitFor({ timeout: 40000 }); step("betting ended"); // Chờ hết hạn cược
   await card.locator("input[type=number]").fill("0.2"); // Số tiền cọc
   await card.getByRole("button", { name: "Bond Yes" }).click(); // Cọc Yes
+  await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận ở bước xác nhận mới
   await txDone(card); await txDone(card); await card.getByText("Bond leader: Yes").waitFor({ timeout: 20000 }); step("bond Yes 0.2, window open"); // Cửa sổ phán quyết mở
 
   await card.getByText("ready to finalize").waitFor({ timeout: 120000 }); step("window over"); // Chờ hết cửa sổ (60 giây khi deploy mặc định)

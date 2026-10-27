@@ -9,6 +9,7 @@ import { fmt } from "../lib/format"; // Hiện số tiền gọn
 import CreateMarketForm from "../components/CreateMarketForm"; // Form tạo thị trường
 import MarketCard from "../components/MarketCard"; // Thẻ thị trường
 import ThemeToggle from "../components/ThemeToggle"; // Nút chuyển sáng tối
+import PriceTicker from "../components/PriceTicker"; // Dải giá tham khảo
 
 export default function Home() { // Trang chủ
   const [filter, setFilter] = useState(-1); // Danh mục đang lọc, -1 là tất cả
@@ -67,6 +68,8 @@ export default function Home() { // Trang chủ
         <div className="stat"><b>{fmt(totalBet)}</b><span>{symbol} bet</span></div>
         <div className="stat"><b>{fmt(totalBond)}</b><span>{symbol} bonded</span></div>
       </div>
+
+      <PriceTicker />
 
       {connectError && <p className="status error">Could not connect: install MetaMask or unlock it, then try again.</p>}
       {!marketAddress && <p className="status error">Contract address missing. Copy web/.env.local.example to web/.env.local and fill NEXT_PUBLIC_MARKET_ADDRESS.</p>}
