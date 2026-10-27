@@ -19,10 +19,30 @@ async function rpc(method, params) { // Gọi RPC của node Hardhat
   return json.result; // Trả kết quả
 }
 
+async function holdConfirm(page, card) { // Nhấn giữ nút xác nhận đủ lâu (nút cần giữ khoảng 0.8 giây)
+  const button = card.getByRole("button", { name: "Hold to confirm" }); // Nút nhấn giữ
+  await button.scrollIntoViewIfNeeded(); // Đưa vào màn hình
+  const box = await button.boundingBox(); // Vị trí nút
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); // Rê chuột vào giữa nút
+  await page.mouse.down(); // Nhấn xuống
+  await page.waitForTimeout(1200); // Giữ lâu hơn thời gian yêu cầu
+  await page.mouse.up(); // Thả ra
+}
+
 async function txDone(card) { // Chờ giao dịch trên thẻ xong, báo lỗi rõ nếu thất bại
   const status = card.locator(".status.ok, .status.error").first(); // Dòng trạng thái
   await status.waitFor({ timeout: 30000 }); // Chờ xuất hiện
   if ((await status.getAttribute("class")).includes("error")) throw new Error("Transaction failed on page: " + (await status.innerText())); // Thất bại thì dừng kèm lý do
+}
+
+async function holdConfirm(page, card) { // Nhấn giữ nút xác nhận đủ lâu (nút cần giữ khoảng 0.8 giây)
+  const button = card.getByRole("button", { name: "Hold to confirm" }); // Nút nhấn giữ
+  await button.scrollIntoViewIfNeeded(); // Đưa vào màn hình
+  const box = await button.boundingBox(); // Vị trí nút
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); // Rê chuột vào giữa nút
+  await page.mouse.down(); // Nhấn xuống
+  await page.waitForTimeout(1200); // Giữ lâu hơn thời gian yêu cầu
+  await page.mouse.up(); // Thả ra
 }
 
 async function txDone(card) { // Chờ giao dịch trên thẻ xong, báo rõ lý do nếu thất bại
@@ -63,13 +83,13 @@ async function main() { // Hàm chính
   if ((await card.locator("input[type=number]").inputValue()) !== "0.5") throw new Error("Amount input was reset when a new market appeared"); // Số đang gõ không được mất
   step("typed amount survives a new market appearing"); // Qua phép thử lỗi cũ
   await card.getByRole("button", { name: "Bet Yes" }).click(); // Cược Yes
-  await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận ở bước xác nhận mới
+  await holdConfirm(page, card); // Nhấn giữ để xác nhận
   await txDone(card); step("bet Yes 0.5"); // Cược thành công
 
   await card.getByText("Betting ended").waitFor({ timeout: 40000 }); step("betting ended"); // Chờ hết hạn cược
   await card.locator("input[type=number]").fill("0.2"); // Số tiền cọc
   await card.getByRole("button", { name: "Bond Yes" }).click(); // Cọc Yes
-  await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận ở bước xác nhận mới
+  await holdConfirm(page, card); // Nhấn giữ để xác nhận
   await txDone(card); await txDone(card); await card.getByText("Bond leader: Yes").waitFor({ timeout: 20000 }); step("bond Yes 0.2, window open"); // Cửa sổ phán quyết mở
 
   await card.getByText("ready to finalize").waitFor({ timeout: 120000 }); step("window over"); // Chờ hết cửa sổ (60 giây khi deploy mặc định)
@@ -77,7 +97,19 @@ async function main() { // Hàm chính
   await card.getByText("Finished: Yes").waitFor({ timeout: 20000 }); step("finalize: Yes wins"); // Yes thắng
 
   await card.getByRole("button", { name: /^Claim 0\.7/ }).click(); // Nhận 0.7 (0.5 cược + 0.2 cọc, vì là người duy nhất ở cả hai quỹ)
-  await txDone(card); step("claim 0.7"); // Nhận thành công
+  await txDone(card); step("claim 0.7");
+
+  await page.evaluate(() => { window.location.hash = "#portfolio"; }); // Mở trang Portfolio
+  const row = page.locator(".pf-row", { hasText: QUESTION }); // Dòng của thị trường vừa chơi
+  await row.waitFor({ timeout: 20000 }); // Chờ dòng xuất hiện
+  if (!(await row.innerText()).includes("Done")) throw new Error("Portfolio row does not show the claim as done"); // Đã nhận phải hiện Done
+  step("portfolio shows the position as claimed"); // Qua kiểm tra Portfolio
+
+  await page.evaluate(() => { window.location.hash = "#markets"; }); // Về danh sách
+  await page.getByLabel("Search markets").fill(QUESTION); // Tìm đúng câu hỏi
+  await page.waitForTimeout(600); // Chờ lọc
+  if ((await page.locator(".markets .card").count()) !== 1) throw new Error("Search should leave exactly one market"); // Chỉ còn một thẻ
+  step("search leaves exactly one market"); // Qua kiểm tra tìm kiếm // Nhận thành công
 
   if (WATCH) await page.waitForTimeout(6000); // Chế độ xem: dừng vài giây để người xem thấy kết quả cuối
   await browser.close(); // Đóng trình duyệt

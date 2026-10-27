@@ -102,7 +102,7 @@ The scripts save addresses and transaction hashes in the `deployments/` folder.
 
 ## Web app
 
-A Next.js + wagmi app in `web/` with a light and a dark theme (follows the system setting, with a toggle): connect MetaMask, list markets with live countdowns and Yes/No bars, create a market, bet, post bonds, finalize and claim. Every transaction button shows its state: waiting for signature, confirming, done (with an explorer link when one is configured), or failed with a readable reason.
+A Next.js + wagmi app in `web/` with a light and a dark theme (follows the system setting, with a toggle): connect MetaMask, search, filter by category and sort markets, open a market on its own shareable page, see your own positions and what you can claim in a Portfolio page, check an activity chart read from chain events, confirm every bet with a press-and-hold button, list markets with live countdowns and Yes/No bars, create a market, bet, post bonds, finalize and claim. Every transaction button shows its state: waiting for signature, confirming, done (with an explorer link when one is configured), or failed with a readable reason.
 
 ```
 # with the local node running and the contract deployed (see above)

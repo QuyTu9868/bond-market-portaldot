@@ -60,6 +60,12 @@ async function main() { // Hàm chính
   });
   const caption = (text) => page.evaluate((t) => window.__caption(t), text).catch(() => {}); // Đặt phụ đề
   const hold = (ms) => page.waitForTimeout(ms); // Dừng để người xem kịp đọc
+  async function holdConfirm(card) { // Nhấn giữ nút xác nhận đủ lâu
+    const button = card.getByRole("button", { name: "Hold to confirm" }); // Nút nhấn giữ
+    const box = await button.boundingBox(); // Vị trí nút
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); // Rê chuột vào giữa nút
+    await page.mouse.down(); await page.waitForTimeout(1200); await page.mouse.up(); // Giữ rồi thả
+  }
   async function txDone(card) { // Chờ giao dịch xong, báo lỗi ngay nếu thất bại
     const status = card.locator(".status.ok, .status.error").first(); // Dòng trạng thái
     await status.waitFor({ timeout: 90000 }); // Chờ xuất hiện
@@ -84,14 +90,14 @@ async function main() { // Hàm chính
 
   await caption("3. Place a Yes bet"); await hold(1000); // Dùng mức cược mặc định của giao diện
   await card.getByRole("button", { name: "Bet Yes" }).click(); // Bấm cược
-  await hold(1500); await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận
+  await hold(1500); await holdConfirm(card); // Nhấn giữ để xác nhận
   await txDone(card); await hold(1500); // Cược xác nhận
 
   await caption("4. Betting ends. Anyone can now post a bond on Yes or No"); // Hết hạn cược
   await card.getByText("Betting ended").waitFor({ timeout: 90000 }); await hold(6000); // Chờ hết hạn, dừng thêm vài giây vì giờ ước lượng ở giao diện có thể sớm hơn block thật
   await caption("Post a Yes bond"); await hold(500); // Dùng mức cọc mặc định
   await card.getByRole("button", { name: "Bond Yes" }).click(); // Cọc Yes
-  await hold(1500); await card.getByRole("button", { name: "Confirm" }).click(); // Xác nhận
+  await hold(1500); await holdConfirm(card); // Nhấn giữ để xác nhận
   await card.getByText("Bond leader: Yes").waitFor({ timeout: 90000 }); await hold(1500); // Cọc xác nhận
 
   await caption("5. Resolution window is open. The side with the larger bond wins. Waiting 60 seconds..."); // Cửa sổ phán quyết

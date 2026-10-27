@@ -10,11 +10,30 @@ import CreateMarketForm from "../components/CreateMarketForm"; // Form tạo th�
 import MarketCard from "../components/MarketCard"; // Thẻ thị trường
 import ThemeToggle from "../components/ThemeToggle"; // Nút chuyển sáng tối
 import PriceTicker from "../components/PriceTicker"; // Dải giá tham khảo
+import HowItWorks from "../components/HowItWorks"; // Khối giải thích ngắn
+import Portfolio from "../components/Portfolio"; // Trang vị thế của người dùng
+
+function readRoute() { // Đọc trang đang xem từ phần sau dấu # của địa chỉ, nhờ vậy mỗi thị trường có đường dẫn riêng để chia sẻ
+  const hash = window.location.hash; // Phần sau dấu #
+  if (hash === "#portfolio") return { view: "portfolio" }; // Trang vị thế
+  const match = /^#m=(\d+)$/.exec(hash); // Trang riêng của một thị trường, dạng #m=5
+  if (match) return { view: "market", id: Number(match[1]) }; // Trả về id
+  return { view: "markets" }; // Mặc định là danh sách
+}
 
 export default function Home() { // Trang chủ
+  const [route, setRoute] = useState({ view: "markets" }); // Trang đang xem
   const [filter, setFilter] = useState(-1); // Danh mục đang lọc, -1 là tất cả
+  const [query, setQuery] = useState(""); // Chữ đang tìm
+  const [sort, setSort] = useState("newest"); // Cách sắp xếp: newest, pool hoặc ending
   const [mounted, setMounted] = useState(false); // Tránh lệch giữa server và trình duyệt khi render
-  useEffect(() => setMounted(true), []); // Đánh dấu đã chạy ở trình duyệt
+  useEffect(() => { // Khi vào trang: đọc địa chỉ và theo dõi khi người dùng đổi trang
+    setMounted(true); // Đánh dấu đã chạy ở trình duyệt
+    setRoute(readRoute()); // Trang ban đầu
+    const onChange = () => setRoute(readRoute()); // Khi địa chỉ đổi
+    window.addEventListener("hashchange", onChange); // Lắng nghe
+    return () => window.removeEventListener("hashchange", onChange); // Dọn khi rời trang
+  }, []);
   const { address, isConnected, chainId } = useAccount(); // Trạng thái ví
   const { connect, connectors, isPending: connecting, error: connectError } = useConnect(); // Kết nối ví
   const { disconnect } = useDisconnect(); // Ngắt kết nối
@@ -46,10 +65,35 @@ export default function Home() { // Trang chủ
     perCategory[item.result[9]] = (perCategory[item.result[9]] ?? 0) + 1; // Đếm số thị trường của từng danh mục
   }
 
+  const needle = query.trim().toLowerCase(); // Chữ tìm kiếm viết thường
+  const nowSeconds = Math.floor(Date.now() / 1000); // Giờ hiện tại để sắp xếp theo hạn
+  const visible = ids // Các thị trường sẽ hiện: lọc theo danh mục và chữ tìm, rồi sắp xếp
+    .map((id) => ({ id, data: list.data?.[id] }))
+    .filter(({ data }) => data && data.status === "success")
+    .filter(({ data }) => filter === -1 || data.result[9] === filter)
+    .filter(({ id, data }) => needle === "" || data.result[0].toLowerCase().includes(needle) || `#${id}` === needle)
+    .sort((a, b) => {
+      const ra = a.data.result; const rb = b.data.result; // Dữ liệu hai thị trường
+      if (sort === "pool") { // Quỹ lớn nhất trước (cược cộng cọc)
+        const pa = ra[4] + ra[5] + ra[6] + ra[7]; const pb = rb[4] + rb[5] + rb[6] + rb[7]; // Tổng quỹ
+        return pa === pb ? b.id - a.id : pa > pb ? -1 : 1;
+      }
+      if (sort === "ending") { // Sắp hết hạn cược trước, thị trường đã qua hạn xuống cuối
+        const ea = Number(ra[2]) > nowSeconds && ra[8] === 0 ? Number(ra[2]) : Infinity; // Hạn còn hiệu lực
+        const eb = Number(rb[2]) > nowSeconds && rb[8] === 0 ? Number(rb[2]) : Infinity;
+        return ea === eb ? b.id - a.id : ea - eb;
+      }
+      return b.id - a.id; // Mới nhất trước
+    });
+
   return ( // Giao diện trang
     <main>
       <header>
-        <div className="brand"><img src="/logo.svg" alt="" />Bond Market</div>
+        <a className="brand" href="#markets"><img src="/logo.svg" alt="" />Bond Market</a>
+        <nav className="nav">
+          <a href="#markets" className={route.view === "portfolio" ? "" : "active"}>Markets</a>
+          <a href="#portfolio" className={route.view === "portfolio" ? "active" : ""}>Portfolio</a>
+        </nav>
         <div className="header-right">
           <span className="pill">{targetChain.name}</span>
           <ThemeToggle />
@@ -58,18 +102,20 @@ export default function Home() { // Trang chủ
         </div>
       </header>
 
-      <section className="hero">
-        <svg className="watermark" viewBox="0 0 512 512" aria-hidden="true"><circle cx="312" cy="256" r="96" fill="none" stroke="var(--accent)" strokeWidth="40" /><circle cx="200" cy="256" r="96" fill="none" stroke="var(--fg)" strokeWidth="40" /></svg>
-        <h1>Predict. Bond. <em>Settle.</em></h1>
-        <p>The larger bond decides the result. No oracle, no admin.</p>
-      </section>
-      <div className="stats">
-        <div className="stat"><b>{total}</b><span>Markets</span></div>
-        <div className="stat"><b>{fmt(totalBet)}</b><span>{symbol} bet</span></div>
-        <div className="stat"><b>{fmt(totalBond)}</b><span>{symbol} bonded</span></div>
-      </div>
-
-      <PriceTicker />
+      {route.view === "markets" && <>
+        <section className="hero">
+          <svg className="watermark" viewBox="0 0 512 512" aria-hidden="true"><circle cx="312" cy="256" r="96" fill="none" stroke="var(--accent)" strokeWidth="40" /><circle cx="200" cy="256" r="96" fill="none" stroke="var(--fg)" strokeWidth="40" /></svg>
+          <h1>Predict. Bond. <em>Settle.</em></h1>
+          <p>The larger bond decides the result. No oracle, no admin.</p>
+        </section>
+        <div className="stats">
+          <div className="stat"><b>{total}</b><span>Markets</span></div>
+          <div className="stat"><b>{fmt(totalBet)}</b><span>{symbol} bet</span></div>
+          <div className="stat"><b>{fmt(totalBond)}</b><span>{symbol} bonded</span></div>
+        </div>
+        <PriceTicker />
+        <HowItWorks />
+      </>}
 
       {connectError && <p className="status error">Could not connect: install MetaMask or unlock it, then try again.</p>}
       {!marketAddress && <p className="status error">Contract address missing. Copy web/.env.local.example to web/.env.local and fill NEXT_PUBLIC_MARKET_ADDRESS.</p>}
@@ -81,24 +127,38 @@ export default function Home() { // Trang chủ
         </div>
       )}
 
-      {isConnected && !wrongNetwork && marketAddress && <CreateMarketForm onDone={refresh} />}
-      {!isConnected && marketAddress && <p className="muted">Connect your wallet to create markets, bet and bond. You can read markets without a wallet.</p>}
+      {route.view === "portfolio" && <Portfolio markets={list.data} onChange={refresh} />}
 
-      <h2>Markets</h2>
-      <div className="tabs">
-        <button className={`tab ${filter === -1 ? "active" : ""}`} onClick={() => setFilter(-1)}>All ({total})</button>
-        {CATEGORIES.map((name, index) => <button key={name} className={`tab ${filter === index ? "active" : ""}`} onClick={() => setFilter(index)}>{name} ({perCategory[index] ?? 0})</button>)}
-      </div>
-      {marketAddress && total === 0 && !count.isLoading && <p className="muted">No markets yet. Create the first one.</p>}
-      {total > 0 && filter !== -1 && (perCategory[filter] ?? 0) === 0 && <p className="muted">No markets in this category yet.</p>}
-      <div className="markets">
-        {[...ids].reverse().map((id) => { // Vẽ từng thị trường, mới nhất đứng trước
-          const data = list.data?.[id]; // Kết quả đọc của thị trường này (vị trí trong danh sách = id)
-          if (!data || data.status !== "success") return null; // Chưa có dữ liệu thì bỏ qua
-          if (filter !== -1 && data.result[9] !== filter) return null; // Đang lọc danh mục khác thì ẩn
-          return <MarketCard key={id} id={id} market={data.result} onChange={refresh} />; // Vẽ thẻ
-        })}
-      </div>
+      {route.view === "market" && <>
+        <p><a href="#markets">&larr; All markets</a></p>
+        {list.data?.[route.id]?.status === "success"
+          ? <div className="single"><MarketCard key={route.id} id={route.id} market={list.data[route.id].result} onChange={refresh} detail /></div>
+          : <p className="muted">{total > 0 && route.id >= total ? "This market does not exist." : "Loading market..."}</p>}
+      </>}
+
+      {route.view === "markets" && <>
+        {isConnected && !wrongNetwork && marketAddress && <CreateMarketForm onDone={refresh} />}
+        {!isConnected && marketAddress && <p className="muted">Connect your wallet to create markets, bet and bond. You can read markets without a wallet.</p>}
+
+        <h2>Markets</h2>
+        <div className="tabs">
+          <button className={`tab ${filter === -1 ? "active" : ""}`} onClick={() => setFilter(-1)}>All ({total})</button>
+          {CATEGORIES.map((name, index) => <button key={name} className={`tab ${filter === index ? "active" : ""}`} onClick={() => setFilter(index)}>{name} ({perCategory[index] ?? 0})</button>)}
+        </div>
+        <div className="toolbar">
+          <input type="search" aria-label="Search markets" placeholder="Search markets by question or #id" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select aria-label="Sort markets" value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="newest">Newest</option>
+            <option value="pool">Biggest pool</option>
+            <option value="ending">Ending soon</option>
+          </select>
+        </div>
+        {marketAddress && total === 0 && !count.isLoading && <p className="muted">No markets yet. Create the first one.</p>}
+        {total > 0 && visible.length === 0 && <p className="muted">No markets match your filters.</p>}
+        <div className="markets">
+          {visible.map(({ id, data }) => <MarketCard key={id} id={id} market={data.result} onChange={refresh} />)}
+        </div>
+      </>}
     </main>
   );
 }

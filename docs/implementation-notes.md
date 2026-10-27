@@ -71,6 +71,17 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 - Đã kiểm: không tràn ngang ở 1280, 1920 và 390px; E2E đạt.
 - Lưu ý: dùng thuộc tính CSS `zoom` (Edge, Chrome, Safari, Firefox 126 trở lên). Muốn đổi cỡ chỉ cần sửa số 1.04. Nếu phóng lên trên khoảng 1.4 thì phải thêm luật một cột cho khoảng 1100px trở lên (mốc = 760 nhân hệ số).
 
+### Sáu tính năng học từ ULTRAMINT, làm xong 27/10 (Portfolio, How it works, tìm kiếm và sắp xếp, trang riêng từng thị trường, biên nhận chi tiết, nhấn giữ để xác nhận)
+
+- **Điều hướng bằng dấu #** (`#markets`, `#portfolio`, `#m=5`) trong MỘT file `page.js`, không tạo thêm thư mục route. Lý do: luật dự án cấm hai file trùng tên, mà Next.js bắt mỗi route phải có file tên `page.js`. Hệ quả: mỗi thị trường có đường dẫn chia sẻ được (nút "Copy link" và "Open page" trên thẻ), mở trang riêng thì biểu đồ mở sẵn.
+- **Portfolio** (`web/components/Portfolio.js`): đọc `positions` của ví ở mọi thị trường, hiện số thị trường đã tham gia, tổng tiền đã bỏ vào, tiền có thể nhận, từng dòng có nút Finalize và Claim. Chưa kết nối ví thì mời kết nối.
+- **How it works**: bốn bước, có thể thu gọn, ở đầu trang danh sách.
+- **Tìm kiếm** theo chữ trong câu hỏi hoặc `#id`, **sắp xếp** Newest, Biggest pool (cược cộng cọc), Ending soon.
+- **Biên nhận chi tiết**: "Show details" hiện thị trường, phe, số tiền, ước tính tiền nhận và mã giao dịch (có link nếu cấu hình explorer).
+- **Nhấn giữ để xác nhận** (`HoldButton`, 0.8 giây): thả sớm thì không xác nhận (đã kiểm), dùng được bằng chuột, cảm ứng và giữ phím Enter hoặc Space. Bài test E2E và kịch bản quay video đã chuyển sang nhấn giữ.
+- **Sửa lỗi canh giờ ở gốc** (`web/lib/useChainNow.js`): trước đây giao diện ngoại suy giờ chuỗi theo đồng hồ máy nên có lúc báo "đã hết giờ" sớm hơn contract thấy, khiến bấm cọc, chốt bị từ chối ("reverted"). Test E2E hỏng ngẫu nhiên vì lỗi này (nhiều lần khi mạng ảo bị lệch giờ sau các đợt bắn giao dịch dồn dập). Nay mọi quyết định "đã tới mốc chưa" dùng giờ của block mới nhất (`useChainNow`, không bao giờ sớm hơn contract), còn chữ đếm ngược dùng giờ ngoại suy mượt (`useChainDisplayNow`). Test E2E đạt 3 lần liên tiếp sau khi sửa. Lưu ý đây là thay đổi hành vi: nút có thể mở chậm vài giây so với đồng hồ thật, đổi lại không bao giờ bị từ chối vì chưa tới giờ.
+- Đã kiểm: build đạt, E2E đạt (thêm kiểm tra Portfolio và tìm kiếm), chụp ảnh thật.
+
 ### Dải giá, biểu đồ hoạt động, bước xác nhận và biên nhận (27/10, học từ ULTRAMINT)
 
 - **Dải giá BTC, ETH, SOL** (`web/components/PriceTicker.js`): gọi API công khai của CoinGecko mỗi 60 giây, chỉ để tham khảo, ghi rõ "never decide a market". Đã kiểm trước: API trả giá và cho phép gọi từ trình duyệt. Lỗi mạng hoặc bị giới hạn thì giữ giá cũ và không báo lỗi. KHÔNG dùng giá để tự chốt kết quả vì làm vậy cần oracle (trái với điểm bán hàng "no oracle").

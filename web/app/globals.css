@@ -95,3 +95,30 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 a { color: inherit; } /* Link cùng màu chữ */
 @media (max-width: 760px) { .markets { grid-template-columns: 1fr; } .hero h1 { font-size: 42px; } .stats { flex-wrap: nowrap; gap: 8px; } .stat { min-width: 0; flex: 1; padding: 10px 12px; } .hero .watermark { width: 240px; height: 240px; top: -30px; } } /* Điện thoại: một cột */
 @media (min-width: 1100px) { html { zoom: 1.04; } } /* Màn hình máy tính: cỡ giao diện đúng như ảnh chủ dự án gửi ngày 26/10 (khung nội dung khoảng 1117px, tức gấp khoảng 1.04 lần cỡ gốc 1080px) */
+.nav { display: flex; gap: 6px; } /* Thanh điều hướng Markets và Portfolio */
+.nav a { padding: 7px 14px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 14px; color: var(--muted); } /* Mỗi liên kết */
+.nav a.active { background: var(--card); color: var(--fg); border: 1px solid var(--line); } /* Trang đang xem */
+a.brand { text-decoration: none; color: inherit; } /* Logo là liên kết về trang chủ */
+.how { margin: 0 0 22px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); } /* Khối How it works */
+.how summary { cursor: pointer; font-weight: 700; } /* Dòng bấm để thu gọn */
+.how .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0 10px; } /* Bốn bước nằm ngang */
+.how .step { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); } /* Một bước */
+.how .step p { margin: 6px 0 0; font-size: 13px; color: var(--muted); line-height: 1.4; } /* Mô tả bước */
+.how .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-right: 8px; border-radius: 50%; background: var(--accent); color: var(--onaccent); font-size: 12px; font-weight: 800; } /* Số thứ tự bước */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 16px; } /* Ô tìm kiếm và chọn cách sắp xếp */
+.toolbar input { flex: 1; min-width: 200px; } /* Ô tìm kiếm */
+.toolbar select, form.card select { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; } /* Ô chọn */
+.links { display: flex; gap: 14px; margin: 0 0 4px; font-size: 13px; } /* Liên kết nhỏ trong thẻ */
+.links a { color: var(--accent-text); font-weight: 600; } /* Liên kết Open page */
+.linkbtn { padding: 0; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; } /* Nút kiểu liên kết */
+.single { max-width: 640px; } /* Trang riêng của một thị trường gọn một cột */
+.mono { font-family: var(--mono); font-size: 12px; } /* Chữ đơn cách */
+button.hold { position: relative; overflow: hidden; background: linear-gradient(to right, color-mix(in srgb, var(--accent) 55%, var(--bg)) calc(var(--p, 0) * 100%), var(--accent) calc(var(--p, 0) * 100%)); user-select: none; touch-action: none; } /* Nút nhấn giữ có thanh tiến độ chạy bên trong */
+.pf { display: flex; flex-direction: column; gap: 12px; } /* Danh sách vị thế */
+.pf-row { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 0.8fr auto; gap: 14px; align-items: center; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); } /* Một dòng vị thế */
+.pf-title { display: block; font-weight: 700; text-decoration: none; margin: 2px 0; } /* Tên thị trường */
+.pf-main p { margin: 0; } /* Sát dòng */
+.pf-cell .small { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; } /* Nhãn ô */
+.pf-cell b { font-family: var(--mono); font-size: 13px; } /* Giá trị ô */
+.pf-act { display: flex; flex-direction: column; gap: 6px; align-items: stretch; } /* Cột nút */
+@media (max-width: 760px) { .how .steps { grid-template-columns: 1fr 1fr; } .pf-row { grid-template-columns: 1fr; } header { gap: 8px; } } /* Điện thoại: bước xếp hai cột, dòng vị thế một cột */

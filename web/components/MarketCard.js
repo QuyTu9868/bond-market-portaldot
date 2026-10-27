@@ -4,15 +4,16 @@ import { useState } from "react"; // Hook trạng thái
 import { useAccount, useBalance, useReadContract } from "wagmi"; // Đọc dữ liệu, số dư và địa chỉ ví
 import { parseEther } from "viem"; // Đổi đơn vị tiền sang wei
 import { marketAbi, RESULT_LABELS, CATEGORIES } from "../lib/contract"; // ABI, tên kết quả và danh mục
-import { marketAddress, targetChain } from "../lib/config"; // Địa chỉ contract và mạng
+import { marketAddress, targetChain, explorerTxUrl } from "../lib/config"; // Địa chỉ contract, mạng và link xem giao dịch
 import { useTx } from "../lib/useTx"; // Hook gửi giao dịch
-import { useChainNow } from "../lib/useChainNow"; // Giờ theo chuỗi
+import { useChainNow, useChainDisplayNow } from "../lib/useChainNow"; // Giờ an toàn (quyết định) và giờ hiển thị (đếm ngược)
 import { computePayout } from "../lib/payout"; // Tính tiền sẽ nhận (contract không còn hàm xem trước)
+import { REFUND_DELAY } from "../lib/phase"; // Số giây chờ hoàn tiền khi không ai cọc
 import { fmt } from "../lib/format"; // Hiện số tiền gọn
 import TxStatus from "./TxStatus"; // Hiện trạng thái giao dịch
 import ActivityChart from "./ActivityChart"; // Biểu đồ hoạt động của thị trường
+import HoldButton from "./HoldButton"; // Nút nhấn giữ để xác nhận
 
-const REFUND_DELAY = 7 * 24 * 3600; // Phải khớp NO_BOND_REFUND_DELAY trong contract (7 ngày)
 const CLOSING_SECONDS = 10; // Còn dưới số giây này là hạn cược thì khóa nút cược, vì giao dịch chỉ vào block sau vài giây và có thể bị từ chối
 
 function formatDuration(seconds) { // Đổi số giây thành chữ dễ đọc
@@ -38,7 +39,7 @@ function SplitBar({ yes, no, yesText, noText, emptyText }) { // Thanh chia Yes (
   );
 }
 
-function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { // Ô nhập tiền, ước tính, bước xác nhận và biên nhận (dùng cho cược và cọc)
+function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { // Ô nhập tiền, ước tính, bước xác nhận nhấn giữ và biên nhận chi tiết (dùng cho cược và cọc)
   const [amount, setAmount] = useState("0.01"); // Số tiền nhập
   const [pendingSide, setPendingSide] = useState(null); // Phe đang chờ xác nhận: null là chưa chọn, true là Yes, false là No
   const [submitted, setSubmitted] = useState(null); // Điều đã gửi, để hiện biên nhận khi thành công
@@ -51,8 +52,9 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
   const busy = tx.status === "signing" || tx.status === "confirming"; // Đang xử lý thì khóa nút
   const total = yesPool + noPool; // Tổng quỹ hiện tại
   const receive = (sidePool) => (wei * (total + wei)) / (sidePool + wei); // Tiền nhận nếu phe này thắng: phần của mình trong quỹ sau khi thêm số tiền này (cùng công thức với contract)
-  function confirm() { // Người dùng bấm Confirm: gửi giao dịch thật
-    setSubmitted({ side: pendingSide ? "Yes" : "No", amount: fmt(wei) }); // Nhớ lại để hiện biên nhận
+  function confirm() { // Người dùng đã nhấn giữ đủ lâu: gửi giao dịch thật
+    const side = pendingSide ? "Yes" : "No"; // Tên phe
+    setSubmitted({ side, amount: fmt(wei), estimate: fmt(receive(pendingSide ? yesPool : noPool)) }); // Nhớ lại để hiện biên nhận chi tiết
     tx.send(fn, [BigInt(id), pendingSide], wei); // Gửi giao dịch kèm tiền
     setPendingSide(null); // Quay về màn hình thường, trạng thái giao dịch hiện bên dưới
   }
@@ -63,9 +65,10 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
         <p><b>Please confirm:</b> {label} {fmt(wei)} on {side}</p>
         <p className="note">You pay {fmt(wei)}. Estimate: you receive about {fmt(receive(pendingSide ? yesPool : noPool))} {what} if {side} wins. The final amount may differ if others join first.</p>
         <div className="action">
-          <button disabled={!valid || busy} onClick={confirm}>Confirm</button>
+          <HoldButton disabled={!valid || busy} onConfirm={confirm}>Hold to confirm</HoldButton>
           <button className="ghost" onClick={() => setPendingSide(null)}>Cancel</button>
         </div>
+        <p className="note">Press and hold the button for a moment (or hold Enter) so a stray click cannot place a {label.toLowerCase()}.</p>
       </div>
     );
   }
@@ -81,19 +84,31 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
       </div>
       {wei > 0n && <p className="note">Estimate {what}: if Yes wins you receive about {fmt(receive(yesPool))}, if No wins about {fmt(receive(noPool))}. It changes as others join.</p>}
       {notEnough && <p className="note warn">Not enough balance for this amount. Your balance is {fmt(balance.data.value)}.</p>}
-      {tx.status === "success" && submitted && <p className="note receipt"><b>Receipt:</b> you {fn === "bet" ? "bet" : "bonded"} {submitted.amount} on {submitted.side}.</p>}
+      {tx.status === "success" && submitted && (
+        <div className="note receipt">
+          <p><b>Receipt:</b> you {fn === "bet" ? "bet" : "bonded"} {submitted.amount} on {submitted.side}.</p>
+          <details className="rules">
+            <summary>Show details</summary>
+            <p>Market #{id}, side {submitted.side}, amount {submitted.amount}. Estimated payout if {submitted.side} wins: about {submitted.estimate}.</p>
+            {tx.hash && <p className="mono">Transaction: {explorerTxUrl ? <a href={explorerTxUrl + tx.hash} target="_blank" rel="noreferrer">{tx.hash.slice(0, 14)}...</a> : `${tx.hash.slice(0, 14)}...${tx.hash.slice(-6)}`}</p>}
+          </details>
+        </div>
+      )}
     </>
   );
 }
 
-export default function MarketCard({ id, market, onChange }) { // Thẻ hiển thị một thị trường
+export default function MarketCard({ id, market, onChange, detail = false }) { // Thẻ hiển thị một thị trường (detail: trang riêng của thị trường, mở sẵn biểu đồ)
   const [question, , bettingEndsAt, windowEnd, poolYes, poolNo, bondYes, bondNo, result, category] = market; // Tách các trường từ contract
   const { address } = useAccount(); // Địa chỉ ví đang kết nối
-  const now = useChainNow(); // Giờ hiện tại theo chuỗi
+  const now = useChainNow(); // Giờ an toàn theo chuỗi (giờ của block mới nhất), dùng để quyết định cho bấm nút
+  const displayNow = useChainDisplayNow(); // Giờ ước lượng chạy mượt, chỉ dùng để hiện chữ đếm ngược
   const betTx = useTx(onChange); // Giao dịch cược
   const bondTx = useTx(onChange); // Giao dịch cọc
   const finishTx = useTx(onChange); // Giao dịch chốt hoặc nhận tiền
   const position = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "positions", args: [BigInt(id), address], chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Phần của mình trong thị trường này
+  const [chartOpen, setChartOpen] = useState(detail); // Đã mở biểu đồ chưa (chỉ đọc nhật ký khi mở)
+  const [copied, setCopied] = useState(false); // Vừa sao chép link
 
   const end = Number(bettingEndsAt); // Hạn cược (giây)
   const wEnd = Number(windowEnd); // Hạn chốt (giây), 0 nếu chưa ai cọc
@@ -110,9 +125,9 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
     timeText = result === 1 ? "Yes won" : result === 2 ? "No won" : "Refunded"; // Kết quả ngắn
     canFinish = true; // Cho nhận tiền
   } else if (now < end) { // Còn trong hạn cược
-    phase = `Betting open, ends in ${formatDuration(end - now)}`; // Đếm ngược hạn cược
+    phase = `Betting open, ends in ${formatDuration(end - displayNow)}`; // Đếm ngược hạn cược
     chip = "Betting open"; chipKind = "open"; // Nhãn xanh
-    timeText = `ends in ${formatDuration(end - now)}`; // Đồng hồ
+    timeText = `ends in ${formatDuration(end - displayNow)}`; // Đồng hồ
     canBet = true; // Cho cược
   } else if (wEnd === 0 && now >= end + REFUND_DELAY) { // Quá 7 ngày không ai cọc
     phase = "Nobody posted a bond for 7 days: refund available"; // Báo được hoàn tiền
@@ -123,9 +138,9 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
     chip = "Waiting for bond"; chipKind = "warn"; // Nhãn cam
     canBond = true; // Cho cọc
   } else if (now < wEnd) { // Đang trong cửa sổ phán quyết
-    phase = `Resolution window, ends in ${formatDuration(wEnd - now)}`; // Đếm ngược cửa sổ
+    phase = `Resolution window, ends in ${formatDuration(wEnd - displayNow)}`; // Đếm ngược cửa sổ
     chip = "Resolution window"; chipKind = "warn"; // Nhãn cam
-    timeText = `ends in ${formatDuration(wEnd - now)}`; // Đồng hồ
+    timeText = `ends in ${formatDuration(wEnd - displayNow)}`; // Đồng hồ
     canBond = true; // Cho cọc thêm
   } else { // Hết cửa sổ, chưa chốt
     phase = "Window over, ready to finalize"; // Sẵn sàng chốt
@@ -135,9 +150,12 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
 
   const payout = position.data ? computePayout(market, position.data) : 0n; // Số tiền được nhận (0 nếu chưa có)
   const leading = bondYes === bondNo ? "tie" : bondYes > bondNo ? "Yes" : "No"; // Phe đang dẫn đầu về cọc
-  const closing = canBet && end - now <= CLOSING_SECONDS; // Sắp hết hạn cược
+  const closing = canBet && end - displayNow <= CLOSING_SECONDS; // Sắp hết hạn cược
   const busy = finishTx.status === "signing" || finishTx.status === "confirming"; // Đang xử lý chốt hoặc nhận tiền
-  const [chartOpen, setChartOpen] = useState(false); // Đã mở biểu đồ chưa (chỉ đọc nhật ký khi mở)
+
+  async function copyLink() { // Sao chép đường dẫn riêng của thị trường để chia sẻ
+    try { await navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#m=${id}`); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch (e) { /* Trình duyệt chặn thì bỏ qua */ } // Ghi vào bộ nhớ tạm
+  }
 
   return ( // Giao diện thẻ
     <div className="card">
@@ -145,6 +163,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
       <p className="cat">{CATEGORIES[category] ?? "Other"}</p>
       <h3>#{id} {question}</h3>
       <p className="phase">{phase}</p>
+      <p className="links">{!detail && <a href={`#m=${id}`}>Open page</a>}<button type="button" className="linkbtn" onClick={copyLink}>{copied ? "Link copied" : "Copy link"}</button></p>
 
       <div className="label"><span>Bets <i className="hint" tabIndex={0} data-tip="Money placed on Yes or No before betting closes. Winners share the whole bet pool.">?</i></span><span>{fmt(poolYes + poolNo)}</span></div>
       <SplitBar yes={poolYes} no={poolNo} yesText={`Yes ${fmt(poolYes)}`} noText={`No ${fmt(poolNo)}`} emptyText="No bets yet" />
@@ -167,7 +186,7 @@ export default function MarketCard({ id, market, onChange }) { // Thẻ hiển t
           <TxStatus tx={finishTx} />
         </>
       )}
-      <details className="rules" onToggle={(e) => setChartOpen(e.currentTarget.open)}>
+      <details className="rules" open={chartOpen} onToggle={(e) => setChartOpen(e.currentTarget.open)}>
         <summary>Activity chart</summary>
         {chartOpen && <ActivityChart id={id} version={String(poolYes + poolNo + bondYes + bondNo)} />}
       </details>
