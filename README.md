@@ -123,24 +123,30 @@ npm run test:e2e
 
 ## Testnet deployment
 
-> The contract deployed on testnet below is **v1** (submitted for the Week 2 check-in). The code in this repository is **v2**, which adds late-bond protection and a smaller contract. v2 is not deployed yet, the addresses will be updated here when it is.
+The current contract (**v2**, the code in this repository) is deployed on Portaldot V3 testnet. The earlier version (v1) submitted for the Week 2 check-in is kept below as evidence.
 
 | Item | Value |
 |---|---|
 | Network | Portaldot V3 testnet (chain ID 420420777) |
 | Deployer | `0x7d2aa1D951D7AB5F005527530b3582d1ADC20798` |
+| **PredictionMarket v2 address** | `0xA0E8abFC1fD958e5900b87963B4c460F980ef86C` (resolution window 60 s for the demo) |
+| v2 deploy tx | `0xee5935a9a5b72262094561c442057d72e27ea69eb4b36228506d85ca4d9eaba0` (block 229897) |
+| v2 demo: create market | `0xf907090d06d928e2b8c1a17af1ec948cbdbc9a8a8582266b10c30f4798fa723c` |
+| v2 demo: bet Yes | `0xe5490d265680476789454095a1420114ebc68dc8a64d323e876bbf2acfac275c` |
+| v2 demo: bond Yes | `0x603c287c35e465348dd6b4f537eebb45334e04c0c910b745949b3b681fdf3f85` |
+| v2 demo: finalize | `0xaab11da344f310aa864cac516454df3f81099cd4638bbf68ba42a36314eecf91` |
+| v2 demo: claim | `0xe3665c59684ce9d9c3407fa4a84ed75014f60b275bfc2ee4005add16fdedbe50` |
+
+Earlier evidence (check-in, v1 contract, kept in `deployments/v1/`):
+
+| Item | Value |
+|---|---|
 | Network check: `Ping` contract | `0x45E235E87f4c73e402141dA4d548D6BE4dfe562b` |
 | `Ping` deploy tx | `0x6a14078835edddb30283aa7b1c6d729982e0a8cfd685e3dde6cdb714e0cccf65` |
-| `ping()` call tx | `0x1b4621c86dd031b050d8a5333b2ffc5ef7bc96b51d6393aac22c728776179a9f` |
-| **PredictionMarket address** | `0xF73AF8c6a914d390A4F17FFa28535aa26c23B659` (resolution window 60 s for the demo) |
-| PredictionMarket deploy tx | `0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1` (block 162272) |
-| Demo: create market | `0xb11b65bc56268a8932177a72af3be04a08e7dddd2fd440f67433b527acacf062` |
-| Demo: bet Yes | `0x21de3dedfe7aac16d33ff95d5893f4d2467e82b67aebe265b1e1fd2e2c2dcc76` |
-| Demo: bond Yes | `0xaf02d92cbfe4ddc83f1003ca962382150d5b4a307a0e895047ace7bf5f8895a7` |
-| Demo: finalize | `0xc8055c5f5c0229e7c1fc50723aa79ce6b23b730b199affc42bedc47cf64569bf` |
-| Demo: claim | `0x76ed44a06cfc0205f64a40794da3fe9986c103845ee9bcef18e428b765c69cad` |
+| v1 PredictionMarket address | `0xF73AF8c6a914d390A4F17FFa28535aa26c23B659` |
+| v1 deploy tx | `0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1` |
 
-Deploying on pallet_revive is expensive: a 6.7 KB contract cost about 530 tPOT because of the storage deposit, and the whole demo about 60 tPOT more. The web app can point to this deployment: set `NEXT_PUBLIC_NETWORK=testnet` and `NEXT_PUBLIC_MARKET_ADDRESS` to the address above in `web/.env.local`.
+Deploying on pallet_revive is expensive because of the storage deposit: v1 (6.7 KB) cost about 530 tPOT and v2 (5.3 KB, 21 percent smaller) about 420 tPOT, plus roughly 45 tPOT for the full demo. The web app points to this deployment when you set `NEXT_PUBLIC_NETWORK=testnet` and `NEXT_PUBLIC_MARKET_ADDRESS=0xA0E8abFC1fD958e5900b87963B4c460F980ef86C` in `web/.env.local`.
 
 ## Contracts
 

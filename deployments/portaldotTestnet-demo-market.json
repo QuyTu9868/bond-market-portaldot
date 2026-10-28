@@ -1,7 +1,7 @@
 {
-  "createTxHash": "0xb11b65bc56268a8932177a72af3be04a08e7dddd2fd440f67433b527acacf062",
-  "betTxHash": "0x21de3dedfe7aac16d33ff95d5893f4d2467e82b67aebe265b1e1fd2e2c2dcc76",
-  "bondTxHash": "0xaf02d92cbfe4ddc83f1003ca962382150d5b4a307a0e895047ace7bf5f8895a7",
-  "finalizeTxHash": "0xc8055c5f5c0229e7c1fc50723aa79ce6b23b730b199affc42bedc47cf64569bf",
-  "claimTxHash": "0x76ed44a06cfc0205f64a40794da3fe9986c103845ee9bcef18e428b765c69cad"
+  "createTxHash": "0xf907090d06d928e2b8c1a17af1ec948cbdbc9a8a8582266b10c30f4798fa723c",
+  "betTxHash": "0xe5490d265680476789454095a1420114ebc68dc8a64d323e876bbf2acfac275c",
+  "bondTxHash": "0x603c287c35e465348dd6b4f537eebb45334e04c0c910b745949b3b681fdf3f85",
+  "finalizeTxHash": "0xaab11da344f310aa864cac516454df3f81099cd4638bbf68ba42a36314eecf91",
+  "claimTxHash": "0xe3665c59684ce9d9c3407fa4a84ed75014f60b275bfc2ee4005add16fdedbe50"
 }

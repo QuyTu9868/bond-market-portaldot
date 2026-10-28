@@ -55,8 +55,6 @@ async function main() { // Hàm chính
 
   await waitSeconds(resolutionWindow); // Chờ hết cửa sổ phán quyết
 
-  const previewBefore = await market.previewPayout(id, user.address); // Xem trước số tiền sẽ nhận
-  console.log("Preview payout:", ethers.formatEther(previewBefore)); // In số xem trước
   const finalizeTx = await market.finalize(id); // Chốt kết quả
   await finalizeTx.wait(); // Chờ xác nhận
   log.finalizeTxHash = finalizeTx.hash; // Lưu mã giao dịch

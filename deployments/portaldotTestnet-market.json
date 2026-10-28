@@ -1,8 +1,8 @@
 {
   "network": "portaldotTestnet",
-  "address": "0xF73AF8c6a914d390A4F17FFa28535aa26c23B659",
+  "address": "0xA0E8abFC1fD958e5900b87963B4c460F980ef86C",
   "deployer": "0x7d2aa1D951D7AB5F005527530b3582d1ADC20798",
-  "deployTxHash": "0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1",
-  "blockNumber": 162272,
+  "deployTxHash": "0xee5935a9a5b72262094561c442057d72e27ea69eb4b36228506d85ca4d9eaba0",
+  "blockNumber": 229897,
   "resolutionWindow": 60
 }

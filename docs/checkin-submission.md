@@ -13,7 +13,7 @@ Anyone can create a Yes/No question and bet with native tokens. After betting cl
 - Slither static analysis: no high or medium findings.
 - Web app (Next.js + wagmi + MetaMask): list markets with live countdowns, create, bet, bond, finalize, claim. Every transaction shows waiting for signature, confirming, done, or a readable error.
 - End-to-end browser test of the full flow (connect, create, bet, bond, finalize, claim) passing on a local chain.
-- Deployed on Portaldot V3 testnet (chain ID 420420777): `PredictionMarket` at `0xF73AF8c6a914d390A4F17FFa28535aa26c23B659`, deploy tx `0xa03b90eef388a35279637ee4c423f57785ef84694c16f28485553c4822eecaa1`. The full flow (create, bet, bond, finalize, claim) ran on testnet, all transaction hashes are in the README.
+- Deployed on Portaldot V3 testnet (chain ID 420420777): `PredictionMarket` v2 at `0xA0E8abFC1fD958e5900b87963B4c460F980ef86C`, deploy tx `0xee5935a9a5b72262094561c442057d72e27ea69eb4b36228506d85ca4d9eaba0`. The full flow (create, bet, bond, finalize, claim) ran on testnet, all transaction hashes are in the README.
 - Finding: deploying on pallet_revive costs about 530 tPOT for a 6.7 KB contract (storage deposit), so contract size matters on this chain.
 
 **Remaining**
