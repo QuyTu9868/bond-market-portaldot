@@ -8,6 +8,7 @@
     "start": "next start",
     "test:e2e": "node e2e/flow.e2e.js",
     "test:e2e:watch": "node e2e/flow.e2e.js --watch",
+    "test:testnet": "node e2e/testnet-full.e2e.js",
     "record": "node e2e/record-demo.js"
   },
   "devDependencies": {

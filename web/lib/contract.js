@@ -39,6 +39,7 @@ export function friendlyError(error) { // Biến lỗi kỹ thuật thành câu 
   const text = String(error?.shortMessage || error?.message || error); // Lấy nội dung lỗi
   if (/user rejected|denied|rejected the request/i.test(text)) return "You rejected the request in your wallet."; // Người dùng bấm hủy
   if (/insufficient funds/i.test(text)) return "Not enough balance to pay for this transaction."; // Thiếu tiền
+  if (/503|temporarily unavailable|unknown RPC error/i.test(text)) return "The testnet is busy right now. Wait a few seconds and try again."; // Node RPC quá tải
   for (const reason of Object.keys(FRIENDLY_ERRORS)) { // Duyệt từng lý do đã biết
     if (text.includes(reason)) return FRIENDLY_ERRORS[reason]; // Khớp thì trả câu dễ hiểu
   }

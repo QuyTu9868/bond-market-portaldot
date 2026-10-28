@@ -10,3 +10,4 @@ hardhat.sandbox.config.js
 deployments/localhost-*.json
 web/e2e/video/
 web/e2e-failure.png
+web/testnet-failure-*.png
