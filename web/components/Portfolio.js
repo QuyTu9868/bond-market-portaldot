@@ -50,7 +50,7 @@ export default function Portfolio({ markets, onChange }) { // Trang các vị th
   const ids = (markets ?? []).map((_, index) => index); // Danh sách id thị trường
   const positions = useReadContracts({ // Đọc phần của người dùng ở mọi thị trường trong một lần gọi
     contracts: ids.map((id) => ({ address: marketAddress, abi: marketAbi, functionName: "positions", args: [BigInt(id), address], chainId: targetChain.id })),
-    query: { enabled: !!address && ids.length > 0, refetchInterval: 5000, placeholderData: keepPreviousData },
+    query: { enabled: !!address && ids.length > 0, refetchInterval: 10000, placeholderData: keepPreviousData },
   });
 
   if (!isConnected) return <div className="card"><h2>Your positions</h2><p className="muted">Connect your wallet to see your bets, bonds and what you can claim.</p></div>; // Điều kiện tiên quyết: cần ví

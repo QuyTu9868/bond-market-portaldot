@@ -23,6 +23,6 @@ export const explorerTxUrl = process.env.NEXT_PUBLIC_EXPLORER_TX_URL; // Tiền 
 export const wagmiConfig = createConfig({ // Cấu hình chung cho cả app
   chains: [targetChain], // Chỉ hỗ trợ một mạng đích
   connectors: [injected()], // Chỉ kết nối qua ví trong trình duyệt
-  transports: { [targetChain.id]: http() }, // Đọc dữ liệu qua RPC mặc định của mạng đích
+  transports: { [targetChain.id]: http(undefined, { retryCount: 5, retryDelay: 1000 }) }, // Đọc dữ liệu qua RPC mặc định của mạng đích, thử lại tối đa 5 lần khi RPC báo bận
   ssr: true, // Cho phép render phía server của Next.js
 });

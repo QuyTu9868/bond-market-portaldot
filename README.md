@@ -137,6 +137,15 @@ The current contract (**v2**, the code in this repository) is deployed on Portal
 | v2 demo: finalize | `0xaab11da344f310aa864cac516454df3f81099cd4638bbf68ba42a36314eecf91` |
 | v2 demo: claim | `0xe3665c59684ce9d9c3407fa4a84ed75014f60b275bfc2ee4005add16fdedbe50` |
 
+**Two deployments of the same v2 code, only the resolution window differs.** The 60 second one is for demos and automated tests. The 1 hour one is for people who try the app by hand, because nobody can bond in 60 seconds in practice.
+
+| Deployment | Address | Resolution window |
+|---|---|---|
+| Demo | `0xA0E8abFC1fD958e5900b87963B4c460F980ef86C` | 60 seconds |
+| Public test | `0x52AdCE6b8A11E8FbfA57c435B99e57d4835B84c3` (deploy tx `0x15f802a2cdf0772811dba1647c247336ed0c3acd0362d6c17239ae6f56febbda`, block 278246) | 1 hour (a late bond extends it by 15 minutes) |
+
+Both full flows (bond war with a winner, and a bond tie with refunds) were tested end to end on testnet through the real web app with two wallets, using the demo deployment (`web/e2e/testnet-full.e2e.js`).
+
 Earlier evidence (check-in, v1 contract, kept in `deployments/v1/`):
 
 | Item | Value |

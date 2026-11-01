@@ -7,7 +7,7 @@ import { targetChain } from "./config"; // Mạng đích
 // Giờ AN TOÀN theo chuỗi: chính là giờ của block mới nhất (giây). Giao dịch chỉ chạy ở block sau đó, nên giờ này không bao giờ SỚM hơn giờ contract thấy.
 // Dùng cho mọi quyết định "đã tới mốc chưa" (cho cọc, chốt, nhận tiền), để không bấm được nút rồi bị contract từ chối vì chưa tới giờ.
 export function useChainNow() {
-  const block = useBlock({ chainId: targetChain.id, query: { refetchInterval: 2000 } }); // Block mới nhất, tải lại mỗi 2 giây
+  const block = useBlock({ chainId: targetChain.id, query: { refetchInterval: 4000 } }); // Block mới nhất, tải lại mỗi 4 giây
   return block.data ? Number(block.data.timestamp) : Math.floor(Date.now() / 1000); // Chưa có block thì tạm dùng đồng hồ máy
 }
 
@@ -18,7 +18,7 @@ export function useChainDisplayNow() {
     const timer = setInterval(() => setWall(Math.floor(Date.now() / 1000)), 1000); // Mỗi giây cập nhật
     return () => clearInterval(timer); // Dọn khi rời trang
   }, []);
-  const block = useBlock({ chainId: targetChain.id, query: { refetchInterval: 2000 } }); // Cùng truy vấn block với hàm trên
+  const block = useBlock({ chainId: targetChain.id, query: { refetchInterval: 4000 } }); // Cùng truy vấn block với hàm trên
   const fetchedAt = Math.floor((block.dataUpdatedAt || Date.now()) / 1000); // Lúc máy đọc được block đó
   const offset = block.data ? Number(block.data.timestamp) - fetchedAt : 0; // Chuỗi lệch so với máy bao nhiêu giây
   return wall + offset; // Giờ ước lượng để hiển thị

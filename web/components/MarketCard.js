@@ -44,7 +44,7 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
   const [pendingSide, setPendingSide] = useState(null); // Phe đang chờ xác nhận: null là chưa chọn, true là Yes, false là No
   const [submitted, setSubmitted] = useState(null); // Điều đã gửi, để hiện biên nhận khi thành công
   const { address } = useAccount(); // Ví đang kết nối
-  const balance = useBalance({ address, chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Số dư của ví, để kiểm tra trước khi cho bấm
+  const balance = useBalance({ address, chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 15000 } }); // Số dư của ví, để kiểm tra trước khi cho bấm
   let wei = 0n; // Số tiền nhập đổi sang wei
   try { wei = parseEther(amount || "0"); } catch (e) { wei = 0n; } // Nhập sai định dạng thì coi như 0
   const notEnough = balance.data !== undefined && wei > balance.data.value; // Thiếu tiền trong ví
@@ -106,7 +106,7 @@ export default function MarketCard({ id, market, onChange, detail = false }) { /
   const betTx = useTx(onChange); // Giao dịch cược
   const bondTx = useTx(onChange); // Giao dịch cọc
   const finishTx = useTx(onChange); // Giao dịch chốt hoặc nhận tiền
-  const position = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "positions", args: [BigInt(id), address], chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 5000 } }); // Phần của mình trong thị trường này
+  const position = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "positions", args: [BigInt(id), address], chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 15000 } }); // Phần của mình trong thị trường này
   const [chartOpen, setChartOpen] = useState(detail); // Đã mở biểu đồ chưa (chỉ đọc nhật ký khi mở)
   const [copied, setCopied] = useState(false); // Vừa sao chép link
 

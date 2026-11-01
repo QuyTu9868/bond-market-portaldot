@@ -167,3 +167,11 @@ Chưa kiểm tra: MetaMask thật bấm tay (bạn cần thử), trạng thái "
 - Hàm admin, tạm dừng khẩn cấp, nâng cấp contract.
 - Điểm uy tín người tạo, tốt nghiệp theo thời gian.
 - Verify source code trên explorer (chưa biết Portaldot có explorer hỗ trợ không).
+
+## 2026-11-01: second deployment with a 1 hour resolution window
+
+- The resolution window is an immutable constructor argument, so a longer window needs a new deployment. The same v2 code was deployed again with `RESOLUTION_WINDOW=3600` at `0x52AdCE6b8A11E8FbfA57c435B99e57d4835B84c3`. The 60 second deployment stays for demos, the video and automated tests. Evidence files: `deployments/portaldotTestnet-market.json` (60 s) and `deployments/portaldotTestnet-market-1h.json` (1 h).
+- Reason: nobody can notice a market and bond in 60 seconds, so the short window only works for scripted demos.
+- Real cost on this chain is higher than first estimated: one full test run costs about 85 tPOT per wallet because of storage deposits, and a deploy about 400 tPOT.
+- Findings from the testnet runs: the public RPC sometimes answers 503 or an HTML page, and the chain once stopped producing blocks for over an hour. The app now polls less (10 to 15 seconds), retries RPC reads up to 5 times, and shows "The testnet is busy" for those errors.
+- Open issue: the balance warning compares only the amount, not the network fee, so a wallet with a few tPOT left can pass the check and still be rejected by the node (`Invalid Transaction`). Not fixed yet.

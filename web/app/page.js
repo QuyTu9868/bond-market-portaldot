@@ -39,12 +39,12 @@ export default function Home() { // Trang chủ
   const { disconnect } = useDisconnect(); // Ngắt kết nối
   const { switchChain, isPending: switching } = useSwitchChain(); // Đổi mạng
 
-  const count = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "marketCount", chainId: targetChain.id, query: { enabled: !!marketAddress, refetchInterval: 5000 } }); // Số thị trường, tự tải lại mỗi 5 giây
+  const count = useReadContract({ address: marketAddress, abi: marketAbi, functionName: "marketCount", chainId: targetChain.id, query: { enabled: !!marketAddress, refetchInterval: 10000 } }); // Số thị trường, tự tải lại mỗi 10 giây
   const total = Number(count.data ?? 0n); // Đổi sang số thường
   const ids = Array.from({ length: total }, (_, i) => i); // Danh sách id tăng dần, vị trí trong kết quả đọc chính là id, nên thêm thị trường mới không làm lệch dữ liệu cũ
   const list = useReadContracts({ // Đọc dữ liệu mọi thị trường trong một lần gọi
     contracts: ids.map((id) => ({ address: marketAddress, abi: marketAbi, functionName: "markets", args: [BigInt(id)], chainId: targetChain.id })), // Mỗi id một lệnh đọc
-    query: { enabled: total > 0, refetchInterval: 5000, placeholderData: keepPreviousData }, // Chỉ đọc khi có thị trường, giữ dữ liệu cũ khi đang tải lại để thẻ không bị gỡ và dựng lại (làm mất số đang gõ)
+    query: { enabled: total > 0, refetchInterval: 10000, placeholderData: keepPreviousData }, // Chỉ đọc khi có thị trường, giữ dữ liệu cũ khi đang tải lại để thẻ không bị gỡ và dựng lại (làm mất số đang gõ)
   });
   function refresh() { // Tải lại sau khi có giao dịch thành công
     count.refetch(); // Tải lại số thị trường

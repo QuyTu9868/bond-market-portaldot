@@ -38,7 +38,7 @@ async function openWallet(browser, key, label) { // Mở một cửa sổ có v�
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: "dark" }); // Cửa sổ riêng
   const page = await context.newPage(); // Tab
   page.on("pageerror", (e) => console.log("  PAGE ERROR", label + ":", e.message.slice(0, 200))); // In lỗi JS
-  await page.exposeFunction("walletRequest", async (method, params) => { try { for (let attempt = 1; ; attempt++) { try { return await walletHandle(method, params); } catch (e) { const busy = String(e.details || e.message || "").includes("503"); if (!busy || attempt >= 6) throw e; await new Promise((r) => setTimeout(r, 4000)); } } } catch (e) { console.log("  RPC ERROR", label, method, (e.details || e.shortMessage || e.message || "").slice(0, 300)); throw e; } }); // Cầu nối ví, in lỗi RPC thật để chẩn đoán
+  await page.exposeFunction("walletRequest", async (method, params) => { try { for (let attempt = 1; ; attempt++) { try { return await walletHandle(method, params); } catch (e) { const busy = /503|<html|Unexpected token|fetch failed|502|504/i.test(String(e.details || e.message || "")); if (!busy || attempt >= 6) throw e; await new Promise((r) => setTimeout(r, 4000)); } } } catch (e) { console.log("  RPC ERROR", label, method, (e.details || e.shortMessage || e.message || "").slice(0, 300)); throw e; } }); // Cầu nối ví, in lỗi RPC thật để chẩn đoán
   const walletHandle = async (method, params) => { // Xử lý từng yêu cầu của app
     if (method === "eth_requestAccounts" || method === "eth_accounts") return [account.address]; // Trả địa chỉ ví
     if (method === "wallet_switchEthereumChain") return null; // Đã đúng mạng
@@ -112,6 +112,10 @@ async function runScenario(browser, w1, w2, { question, category, w1Bet, w2Bet, 
   await placeAction(w1.page, c1, "Bond Yes", w1Bond, "wallet 1 bond Yes " + w1Bond); // Ví 1 cọc Yes, mở cửa sổ 60 giây
   await holdConfirm(w2.page, c2); // Ví 2 xác nhận ngay, không chờ giao diện làm mới
   log("wallet 2 hold released, waiting for tx");
+  await w2.page.waitForTimeout(3000); // Chờ 3 giây rồi chụp lại trạng thái thẻ để chẩn đoán
+  log("DIAG w2 card text: " + (await c2.innerText()).replace(/\s+/g, " ").slice(0, 500)); // In nội dung thẻ
+  log("DIAG hold button count: " + (await c2.getByRole("button", { name: "Hold to confirm" }).count())); // Nút xác nhận còn không
+  await w2.page.screenshot({ path: "testnet-diag-w2.png", fullPage: true }); // Chụp cả trang ví 2
   await txDone(c2, "wallet 2 bond No " + w2Bond); // Chờ cọc của ví 2 xong
   log("wallet 2 bond No " + w2Bond + " done");
   await c1.getByText("ready to finalize").waitFor({ timeout: 300000 }); // Chờ hết cửa sổ phán quyết
@@ -155,6 +159,8 @@ async function main() { // Hàm chính
   check("theme toggle sets a theme", theme === "light" || theme === "dark", "(" + theme + ")"); // Đạt
   await p.getByRole("button", { name: /Dark mode|Light mode/ }).click(); // Chuyển lại
 
+  const only = process.env.ONLY || ""; // Đặt ONLY=B để chỉ chạy kịch bản B (tiết kiệm tPOT)
+  if (only !== "B") { // Kịch bản A bỏ qua khi chỉ chạy B
   log("=== SCENARIO A: bond war, No outbids Yes ===");
   await runScenario(browser, w1, w2, { question: `TNET ${STAMP} A: will No win the bond war?`, category: 1, w1Bet: "0.1", w2Bet: "0.1", w1Bond: "0.05", w2Bond: "0.1", expect: { finishedText: "Finished: No", w2Claim: "0.35", w1Claim: null } }); // Ví 2 thắng
 
@@ -172,6 +178,7 @@ async function main() { // Hàm chính
   const rowA = w2.page.locator(".pf-row", { hasText: questionA }); await rowA.waitFor({ timeout: 60000 }); // Dòng của ví 2
   check("wallet 2 portfolio shows the claim as done", (await rowA.innerText()).includes("Done")); // Phải hiện Done
   await w1.page.getByRole("link", { name: "Markets" }).click(); await w2.page.getByRole("link", { name: "Markets" }).click(); // Về danh sách
+  } // Hết khối kịch bản A
 
   log("=== SCENARIO B: bonds tie, everyone is refunded ===");
   await runScenario(browser, w1, w2, { question: `TNET ${STAMP} B: will the bonds tie?`, category: 0, w1Bet: "0.05", w2Bet: "0.05", w1Bond: "0.05", w2Bond: "0.05", expect: { finishedText: "Finished: Invalid", w2Claim: "0.1", w1Claim: "0.1" } }); // Hòa cọc hoàn tiền
