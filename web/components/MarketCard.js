@@ -4,7 +4,7 @@ import { useState } from "react"; // Hook trạng thái
 import { useAccount, useBalance, useReadContract } from "wagmi"; // Đọc dữ liệu, số dư và địa chỉ ví
 import { parseEther } from "viem"; // Đổi đơn vị tiền sang wei
 import { marketAbi, RESULT_LABELS, CATEGORIES } from "../lib/contract"; // ABI, tên kết quả và danh mục
-import { marketAddress, targetChain, explorerTxUrl } from "../lib/config"; // Địa chỉ contract, mạng và link xem giao dịch
+import { marketAddress, targetChain, explorerTxUrl, feeReserve } from "../lib/config"; // Địa chỉ contract, mạng và link xem giao dịch
 import { useTx } from "../lib/useTx"; // Hook gửi giao dịch
 import { useChainNow, useChainDisplayNow } from "../lib/useChainNow"; // Giờ an toàn (quyết định) và giờ hiển thị (đếm ngược)
 import { computePayout } from "../lib/payout"; // Tính tiền sẽ nhận (contract không còn hàm xem trước)
@@ -47,7 +47,7 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
   const balance = useBalance({ address, chainId: targetChain.id, query: { enabled: !!address, refetchInterval: 15000 } }); // Số dư của ví, để kiểm tra trước khi cho bấm
   let wei = 0n; // Số tiền nhập đổi sang wei
   try { wei = parseEther(amount || "0"); } catch (e) { wei = 0n; } // Nhập sai định dạng thì coi như 0
-  const notEnough = balance.data !== undefined && wei > balance.data.value; // Thiếu tiền trong ví
+  const notEnough = balance.data !== undefined && wei + feeReserve > balance.data.value; // Thiếu tiền trong ví (tính cả khoản chừa cho phí mạng)
   const valid = wei > 0n && !locked && !notEnough; // Số tiền hợp lệ, chưa bị khóa và đủ tiền
   const busy = tx.status === "signing" || tx.status === "confirming"; // Đang xử lý thì khóa nút
   const total = yesPool + noPool; // Tổng quỹ hiện tại
@@ -83,7 +83,7 @@ function AmountAction({ id, fn, label, tx, locked, yesPool, noPool, what }) { //
         <button className="no" disabled={!valid || busy} onClick={() => setPendingSide(false)}>{label} No</button>
       </div>
       {wei > 0n && <p className="note">Estimate {what}: if Yes wins you receive about {fmt(receive(yesPool))}, if No wins about {fmt(receive(noPool))}. It changes as others join.</p>}
-      {notEnough && <p className="note warn">Not enough balance for this amount. Your balance is {fmt(balance.data.value)}.</p>}
+      {notEnough && <p className="note warn">Not enough balance for this amount plus the network fee{feeReserve > 0n ? ` (keep about ${fmt(feeReserve)} for fees)` : ""}. Your balance is {fmt(balance.data.value)}.</p>}
       {tx.status === "success" && submitted && (
         <div className="note receipt">
           <p><b>Receipt:</b> you {fn === "bet" ? "bet" : "bonded"} {submitted.amount} on {submitted.side}.</p>

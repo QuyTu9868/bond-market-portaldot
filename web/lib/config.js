@@ -17,6 +17,7 @@ export const portaldotChain = defineChain({ // Testnet Portaldot V3
 });
 
 export const targetChain = process.env.NEXT_PUBLIC_NETWORK === "testnet" ? portaldotChain : localChain; // Chọn mạng theo biến môi trường, mặc định là mạng ảo
+export const feeReserve = process.env.NEXT_PUBLIC_NETWORK === "testnet" ? 10n * 10n ** 18n : 0n; // Khoản chừa lại để trả phí mạng (mỗi giao dịch trên Portaldot tốn vài tPOT vì phí lưu trữ), mạng ảo không cần
 export const marketAddress = process.env.NEXT_PUBLIC_MARKET_ADDRESS; // Địa chỉ contract đã deploy, lấy từ deployments/
 export const explorerTxUrl = process.env.NEXT_PUBLIC_EXPLORER_TX_URL; // Tiền tố link xem giao dịch (có thể để trống)
 

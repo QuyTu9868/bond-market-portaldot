@@ -76,14 +76,14 @@ async function main() { // Hàm chính
   await page.goto(APP); // Mở app
   await page.getByText("Markets").first().waitFor({ timeout: 30000 }); // Chờ trang tải
   await caption("Bond Market on Portaldot V3 testnet (chain 420420777). Recorded with an automated wallet."); await hold(3500); // Giới thiệu
-  await caption("Contract 0xF73AF8c6a914d390A4F17FFa28535aa26c23B659. No oracle, no admin: the larger bond decides."); await hold(3500); // Địa chỉ contract
+  await caption("Contract 0xA0E8abFC1fD958e5900b87963B4c460F980ef86C (60 second window for the demo). No oracle, no admin: the larger bond decides."); await hold(3500); // Địa chỉ contract
 
   await caption("1. Connect wallet"); await page.getByRole("button", { name: "Connect wallet" }).click(); // Kết nối ví
   await page.getByText("Create a market").waitFor({ timeout: 20000 }); await hold(1000); // Form tạo hiện ra
 
-  await caption("2. Create a Yes/No market (betting open for 30 seconds)"); // Tạo thị trường
+  await caption("2. Create a Yes/No market (betting open for about 40 seconds)"); // Tạo thị trường
   await page.fill("input[placeholder^='A Yes/No']", QUESTION); await hold(1000); // Nhập câu hỏi
-  await page.locator("label input").fill("0.5"); await hold(500); // Hạn cược 30 giây
+  await page.locator("form.card input[type=number]").fill("0.7"); await hold(500); // Hạn cược khoảng 40 giây, đủ cho chuỗi thật chậm
   await page.getByRole("button", { name: "Create market" }).click(); // Bấm tạo
   const card = page.locator(".card", { hasText: QUESTION }).first(); // Thẻ thị trường
   await card.waitFor({ timeout: 90000 }); await hold(500); // Thẻ xuất hiện sau khi xác nhận trên chuỗi
