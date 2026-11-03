@@ -92,7 +92,7 @@ async function createMarket(page, question, categoryIndex) { // Tạo một th�
   log("create market submitted: " + question);
 }
 
-async function runScenario(browser, w1, w2, { question, category, w1Bet, w2Bet, w1Bond, w2Bond, expect }) { // Một kịch bản đầy đủ từ tạo đến nhận tiền
+async function runScenario(browser, w1, w2, { question, category, w1Bet, w2Bet, w1Bond, w2Bond, expect, stopAfterBonds }) { // Một kịch bản đầy đủ từ tạo đến nhận tiền
   await createMarket(w1.page, question, category); // Ví 1 tạo thị trường
   const c1 = await findCard(w1.page, question); // Thẻ trên cửa sổ ví 1
   log("market visible for wallet 1");
@@ -118,6 +118,13 @@ async function runScenario(browser, w1, w2, { question, category, w1Bet, w2Bet, 
   await w2.page.screenshot({ path: "testnet-diag-w2.png", fullPage: true }); // Chụp cả trang ví 2
   await txDone(c2, "wallet 2 bond No " + w2Bond); // Chờ cọc của ví 2 xong
   log("wallet 2 bond No " + w2Bond + " done");
+  if (stopAfterBonds) { // Contract cửa sổ dài: kiểm tra giao diện rồi dừng, không chờ chốt
+    await c1.getByText(/Bond leader: No|BOND LEADER: NO/i).first().waitFor({ timeout: 90000 }); // Phe No dẫn cọc vì cọc nhiều hơn
+    check("bond leader switches to No after the outbid", true); // Đạt
+    const windowText = await c1.innerText(); // Nội dung thẻ
+    check("resolution window shows about an hour", /ends in (5\d|60)m|ends in 1h/i.test(windowText), "(" + (windowText.match(/ends in [0-9hms ]+/i) || ["?"])[0] + ")"); // Cửa sổ khoảng 1 giờ
+    return; // Dừng kịch bản
+  }
   await c1.getByText("ready to finalize").waitFor({ timeout: 300000 }); // Chờ hết cửa sổ phán quyết
   log("window over");
   await c1.getByRole("button", { name: "Finalize" }).click(); // Chốt (không cần xác nhận nhấn giữ)
@@ -152,7 +159,7 @@ async function main() { // Hàm chính
   await p.getByRole("button", { name: /^Esports/ }).click(); await p.getByRole("button", { name: /^All/ }).click(); // Bấm thử các tab danh mục
   check("category tabs work", true); // Đạt nếu không lỗi
   await p.getByLabel("Search markets").fill("zzz-no-such-market"); // Tìm thứ không có
-  check("search with no match shows the empty message", await p.getByText("No markets match your filters.").isVisible()); // Thông báo rỗng
+  check("search with no match shows the empty message", await p.getByText(/No markets match your filters\.|No markets yet\./).first().isVisible()); // Thông báo rỗng (câu thứ hai hiện khi contract chưa có thị trường nào)
   await p.getByLabel("Search markets").fill(""); // Xóa tìm kiếm
   await p.getByRole("button", { name: /Dark mode|Light mode/ }).click(); // Chuyển giao diện
   const theme = await p.evaluate(() => document.documentElement.dataset.theme); // Chế độ hiện tại
@@ -160,7 +167,7 @@ async function main() { // Hàm chính
   await p.getByRole("button", { name: /Dark mode|Light mode/ }).click(); // Chuyển lại
 
   const only = process.env.ONLY || ""; // Đặt ONLY=B để chỉ chạy kịch bản B (tiết kiệm tPOT)
-  if (only !== "B") { // Kịch bản A bỏ qua khi chỉ chạy B
+  if (only === "") { // Kịch bản A bỏ qua khi chỉ chạy B
   log("=== SCENARIO A: bond war, No outbids Yes ===");
   await runScenario(browser, w1, w2, { question: `TNET ${STAMP} A: will No win the bond war?`, category: 1, w1Bet: "0.1", w2Bet: "0.1", w1Bond: "0.05", w2Bond: "0.1", expect: { finishedText: "Finished: No", w2Claim: "0.35", w1Claim: null } }); // Ví 2 thắng
 
@@ -180,8 +187,22 @@ async function main() { // Hàm chính
   await w1.page.getByRole("link", { name: "Markets" }).click(); await w2.page.getByRole("link", { name: "Markets" }).click(); // Về danh sách
   } // Hết khối kịch bản A
 
+  if (only === "" || only === "B") { // Kịch bản B
   log("=== SCENARIO B: bonds tie, everyone is refunded ===");
   await runScenario(browser, w1, w2, { question: `TNET ${STAMP} B: will the bonds tie?`, category: 0, w1Bet: "0.05", w2Bet: "0.05", w1Bond: "0.05", w2Bond: "0.05", expect: { finishedText: "Finished: Invalid", w2Claim: "0.1", w1Claim: "0.1" } }); // Hòa cọc hoàn tiền
+  } // Hết khối kịch bản B
+
+  if (only === "C") { // Kịch bản C: contract cửa sổ 1 giờ, chỉ kiểm tra tới khi cọc xong
+    log("=== SCENARIO C: 1 hour window, create, bet, bond war, portfolio (no finalize) ===");
+    const questionC = `TNET ${STAMP} C: 1 hour window check`; // Câu hỏi C
+    await runScenario(browser, w1, w2, { question: questionC, category: 2, w1Bet: "0.05", w2Bet: "0.05", w1Bond: "0.05", w2Bond: "0.1", stopAfterBonds: true }); // Tạo, cược, cọc đè
+    await w1.page.getByRole("link", { name: "Portfolio" }).click(); // Portfolio ví 1
+    await w1.page.locator(".pf-row", { hasText: questionC }).waitFor({ timeout: 60000 }); // Dòng của thị trường C
+    check("wallet 1 portfolio lists the 1 hour market", true); // Đạt
+    await w2.page.getByRole("link", { name: "Portfolio" }).click(); // Portfolio ví 2
+    await w2.page.locator(".pf-row", { hasText: questionC }).waitFor({ timeout: 60000 }); // Dòng của ví 2
+    check("wallet 2 portfolio lists the 1 hour market", true); // Đạt
+  }
 
   await browser.close(); // Đóng
   const failed = results.filter((r) => !r.ok); // Kiểm tra thất bại
