@@ -4,6 +4,8 @@ A prediction market for Portaldot V3 testnet. Anyone can create a Yes/No questio
 
 Built for Portaldot Hacker House 2026, track: Ecosystem DApps.
 
+Demo video: https://www.youtube.com/watch?v=1qliOvD-X04 | Live app: https://bond-market-portaldot.onrender.com/
+
 > Status: testnet prototype, not audited. Do not use real funds.
 
 ## The problem

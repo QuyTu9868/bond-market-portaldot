@@ -1,6 +1,6 @@
 # Final submission: text to paste on DoraHacks
 
-Dán phần tiếng Anh bên dưới vào ô mô tả dự án. Điền link YouTube vào chỗ có ngoặc vuông trước khi nộp.
+Dán phần tiếng Anh bên dưới vào ô mô tả dự án.
 
 ---
 
@@ -11,7 +11,7 @@ Anyone can create a Yes/No question and bet on it with the native token. After b
 Lying is expensive: to push a wrong result you must out-bond everyone who disagrees, and they profit by doing so. A bond posted in the last quarter of the window extends it by a quarter, so the other side always has time to answer.
 
 **Links**
-- Demo video: [YouTube link]
+- Demo video: https://www.youtube.com/watch?v=1qliOvD-X04
 - Pitch deck: https://github.com/QuyTu9868/bond-market-portaldot/blob/main/docs/pitch/bond-market-pitch-deck.pdf
 - Source code: https://github.com/QuyTu9868/bond-market-portaldot
 - Live app: https://bond-market-portaldot.onrender.com/ (Portaldot V3 testnet, MetaMask needed)
